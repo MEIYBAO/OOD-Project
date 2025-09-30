@@ -7,6 +7,6 @@
 `backed`后端文件
 
 # 大体框架
-![alt text](教务系统.png)
+![alt text](picture/教务系统.png)
 
 # 类属性设计
