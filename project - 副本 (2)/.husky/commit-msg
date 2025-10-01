@@ -1,2 +1,0 @@
-#!/bin/sh
-npx pretty-commit "$1"

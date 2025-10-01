@@ -20,29 +20,12 @@ const router = createRouter({
     // 登录页（不带侧栏）
     { path: '/login', name: 'Login', component: LoginPage, meta: { public: true } },
 
-    // ===== 通用入口（可作为默认角色或公共区）=====
-    {
-      path: '/main',
-      component: RoleLayout,
-      children: [
-        { path: '', redirect: 'dish' }, // /main -> /main/dish
-        { path: 'dish', name: 'Dish', component: Dish },
-        { path: 'category', name: 'Category', component: Category },
-        { path: 'supplier', name: 'Supplier', component: Supplier },
-        { path: 'ingredient', name: 'Ingredient', component: Ingredient },
-        { path: 'order', name: 'Order', component: Order },
-        { path: 'inventory', name: 'Inventory', component: Inventory },
-        { path: 'member', name: 'Member', component: Member },
-        { path: 'employee', name: 'Employee', component: Employee },
-      ],
-    },
-
     // ===== 管理员主页（带侧栏）=====
     {
       path: '/admin-home',
       component: RoleLayout,
       children: [
-        { path: '', redirect: 'dish' },
+        { path: '', redirect: '/admin-home/dish' },
         // 先复用一套页面，后续可按需裁剪/扩展为管理员专属
         { path: 'dish', component: Dish },
         { path: 'category', component: Category },
@@ -60,7 +43,7 @@ const router = createRouter({
       path: '/teacher-home',
       component: RoleLayout,
       children: [
-        { path: '', redirect: 'dish' },
+        { path: '', redirect: '/teacher-home/dish' },
         { path: 'dish', component: Dish },
         { path: 'order', component: Order },
         { path: 'ingredient', component: Ingredient },
@@ -73,7 +56,7 @@ const router = createRouter({
       path: '/counselor-home',
       component: RoleLayout,
       children: [
-        { path: '', redirect: 'member' },
+        { path: '', redirect: '/counselor-home/member' },
         { path: 'member', component: Member },
         { path: 'order', component: Order },
       ],
@@ -84,56 +67,13 @@ const router = createRouter({
       path: '/student-home',
       component: RoleLayout,
       children: [
-        { path: '', redirect: 'dish' },
+        { path: '', redirect: '/student-home/dish' },
         { path: 'dish', component: Dish },
         { path: 'order', component: Order },
       ],
     },
-
-    // 兜底
-    { path: '/:pathMatch(.*)*', redirect: '/login' },
   ],
 })
-
-import { roleHome } from './role-map'
-
-router.beforeEach((to, _from, next) => {
-  // A. 调试/紧急入口：/login?force=1 直接放行，并顺手清理登录态
-  if (to.path === '/login' && to.query.force === '1') {
-    ;['token', 'role'].forEach(k => {
-      localStorage.removeItem(k); sessionStorage.removeItem(k)
-    })
-    return next()
-  }
-
-  // B. 读取并“去污”token（把 'undefined'/'null' 视为无）
-  const raw =
-    localStorage.getItem('token') || sessionStorage.getItem('token') || ''
-  const token =
-    raw && raw !== 'undefined' && raw !== 'null' ? raw : null
-
-  const role =
-    (localStorage.getItem('role') || sessionStorage.getItem('role') || '') ||
-    ''
-
-  console.log('[guard] to=', to.fullPath, 'token?', !!token, 'role=', role, 'raw=', raw)
-
-  // ① 已登录又访问 /login → 回角色首页（必须放最前）
-  if (token && to.path === '/login') {
-    return next(roleHome[role as keyof typeof roleHome] || '/main')
-  }
-
-  // ② 公开页（/login）直接放行（确保路由写了 meta.public）
-  if (to.meta?.public) return next()
-
-  // ③ 需要鉴权但没 token → 去登录
-  if (!token) return next('/login')
-
-  // ④ 其余放行
-  next()
-})
-
-
 
 
 export default router
