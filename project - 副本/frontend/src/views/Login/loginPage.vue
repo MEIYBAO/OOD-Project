@@ -6,6 +6,8 @@ import { useRouter } from 'vue-router'
 import request from '@/utils/request'          // 你的 axios 实例
 import { roleHome } from '@/router/role-map'   // 角色 → 主页映射
 
+type Role = 'admin' | 'teacher' | 'counselor' | 'student'
+
 const router = useRouter()
 
 // 表单引用 & 数据
@@ -13,7 +15,8 @@ const formRef = ref()
 const formModel = reactive({
   username: '',
   password: '',
-  remember: false, // “记住我”可选（这里仅作为 UI，不做区分存储）
+  role: '' as '' | Role,     // 新增：角色
+  remember: false,
 })
 
 // 登录表单校验规则
@@ -26,64 +29,66 @@ const rules = {
     { required: true, message: '请输入密码', trigger: 'blur' },
     { pattern: /^\S{6,32}$/, message: '密码需 6-32 位非空字符', trigger: 'blur' },
   ],
+  role: [
+    { required: true, message: '请选择身份', trigger: 'change' }, // 建议必选，避免同名冲突
+  ],
 }
 
+const roleOptions: Role[] = ['admin', 'teacher', 'counselor', 'student']
 const loading = ref(false)
 
-// API 封装
-const apiLogin = (p: { username: string; password: string }) =>
-  request.post('/auth/login', p) // 返回 { token }
-const apiGetMe = () => request.get('/auth/me') // 返回 { id, username, role }
+// API 封装（加上 role）
+const apiLogin = (p: { username: string; password: string; role: Role }) =>
+  request.post('/auth/login', p) // 可能返回 { token, user }
+const apiGetMe = () => request.get('/auth/me') // 返回 { id, username, role, ... }
 
 // 登录逻辑
 const login = async () => {
   await formRef.value?.validate()
   loading.value = true
   try {
-    // 1) 登录获取 token
-    const { token } = await apiLogin({
+    // 1) 登录获取 token（优先提交带 role）
+    const payload = {
       username: formModel.username.trim(),
       password: formModel.password,
-    })
-
-    // “记住我”：记到 localStorage；否则短期会话用 sessionStorage
-    if (formModel.remember) {
-      localStorage.setItem('token', token)
-    } else {
-      sessionStorage.setItem('token', token)
+      role: formModel.role as Role,
     }
+    const resp = await apiLogin(payload) as any
+    const token: string = resp?.token
 
-    // 2) 拉取用户信息（含角色）
-    const me = await apiGetMe() as { id: number; username: string; role: string }
+    if (!token) throw new Error('服务器未返回 token')
+
+    // “记住我”：记到 localStorage；否则 sessionStorage
     const storage = formModel.remember ? localStorage : sessionStorage
-    storage.setItem('role', me.role)
+    storage.setItem('token', token)
 
-    // 3) 计算目标主页并显式等待导航
-    const home = roleHome[me.role as keyof typeof roleHome] || '/main'
-    console.log('[login] role =', me.role)
-    console.log('[login] goto =', home)
-
-    try {
-      await router.replace(home) // 一定 await，方便观察守卫是否重定向
-      console.log('[login] navigated to', router.currentRoute.value.fullPath)
-      ElMessage.success('登录成功')
-    } catch (navErr) {
-      console.error('[login] navigation error:', navErr)
+    // 2) 解析角色：优先从登录返回的 user 里拿；否则调用 /me
+    let role: Role | null = resp?.user?.role ?? null
+    if (!role) {
+      const me = await apiGetMe() as { id: string; username: string; role: Role }
+      role = me.role
     }
+    if (!role) throw new Error('无法获取用户角色')
+
+    storage.setItem('role', role)
+
+    // 3) 跳转到角色主页
+    const home = roleHome[role] || '/main'
+    await router.replace(home)
+    ElMessage.success('登录成功')
   } catch (e: any) {
     // 登录失败：清理所有登录态
-    localStorage.removeItem('token')
-    localStorage.removeItem('role')
-    sessionStorage.removeItem('token')
-    sessionStorage.removeItem('role')
-    ElMessage.error(e?.response?.data?.message || '登录失败')
+    localStorage.removeItem('token'); localStorage.removeItem('role')
+    sessionStorage.removeItem('token'); sessionStorage.removeItem('role')
+
+    // 后端若返回 409（未选择身份或同名同密多匹配），这里也会走到
+    const msg = e?.response?.data?.message || e?.message || '登录失败'
+    ElMessage.error(msg)
   } finally {
     loading.value = false
   }
 }
-
 </script>
-
 
 <template>
   <el-row class="login-page">
@@ -106,6 +111,7 @@ const login = async () => {
             v-model="formModel.username"
             :prefix-icon="User"
             placeholder="请输入用户名"
+            clearable
           />
         </el-form-item>
 
@@ -115,7 +121,21 @@ const login = async () => {
             :prefix-icon="Lock"
             type="password"
             placeholder="请输入密码"
+            show-password
+            clearable
           />
+        </el-form-item>
+
+        <!-- 新增：角色选择 -->
+        <el-form-item prop="role">
+          <el-select
+            v-model="formModel.role"
+            placeholder="请选择身份"
+            style="width: 100%"
+            clearable
+          >
+            <el-option v-for="r in roleOptions" :key="r" :label="r" :value="r" />
+          </el-select>
         </el-form-item>
 
         <el-form-item class="flex">
