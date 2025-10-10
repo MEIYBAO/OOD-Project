@@ -1,163 +1,161 @@
-<script setup>
-import { User,Lock } from '@element-plus/icons-vue'
-import { ref } from 'vue'
-const isRegister = ref(true)
-const form = ref()
+<script setup lang="ts">
+import { ref, reactive } from 'vue'
+import { User, Lock } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
+import request from '@/utils/request'
+import { roleHome } from '@/router/role-map'
 
+type Role = 'admin' | 'teacher' | 'counselor' | 'student'
 
-const formModel = ref({
+const router = useRouter()
+
+// 角色选项：中文显示 -> 英文值
+const roleOptions = [
+  { label: '管理员', value: 'admin' as Role },
+  { label: '教师',   value: 'teacher' as Role },
+  { label: '辅导员', value: 'counselor' as Role },
+  { label: '学生',   value: 'student' as Role },
+]
+
+const formRef = ref()
+const formModel = reactive({
   username: '',
   password: '',
-  repassword: ''
+  role: '' as '' | Role,
+  remember: false,
 })
-// 整个表单的校验规则
-// 1. 非空校验 required: true      message消息提示，  trigger触发校验的时机 blur change
-// 2. 长度校验 min:xx, max: xx
-// 3. 正则校验 pattern: 正则规则    \S 非空字符
-// 4. 自定义校验 => 自己写逻辑校验 (校验函数)
-//    validator: (rule, value, callback)
-//    (1) rule  当前校验规则相关的信息
-//    (2) value 所校验的表单元素目前的表单值
-//    (3) callback 无论成功还是失败，都需要 callback 回调
-//        - callback() 校验成功
-//        - callback(new Error(错误信息)) 校验失败
+
 const rules = {
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 5, max: 10, message: '用户名必须是 5-10位 的字符', trigger: 'blur' }
+    { min: 3, max: 20, message: '用户名长度 3-20 位', trigger: 'blur' },
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    {
-      pattern: /^\S{6,15}$/,
-      message: '密码必须是 6-15位 的非空字符',
-      trigger: 'blur'
-    }
+    { pattern: /^\S{6,32}$/, message: '密码需 6-32 位非空字符', trigger: 'blur' },
   ],
-  repassword: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    {
-      pattern: /^\S{6,15}$/,
-      message: '密码必须是 6-15位 的非空字符',
-      trigger: 'blur'
-    },
-    {
-      validator: (rule, value, callback) => {
-        // 判断 value 和 当前 form 中收集的 password 是否一致
-        if (value !== formModel.value.password) {
-          callback(new Error('两次输入密码不一致'))
-        } else {
-          callback() // 就算校验成功，也需要callback
-        }
-      },
-      trigger: 'blur'
+  role: [
+    { required: true, message: '请选择身份', trigger: 'change' },
+  ],
+}
+
+const loading = ref(false)
+
+// API
+const apiLogin = (p: { username: string; password: string; role: Role }) =>
+  request.post('/auth/login', p)
+const apiGetMe = () => request.get('/auth/me')
+
+// 登录
+const login = async () => {
+  await formRef.value?.validate()
+  loading.value = true
+  try {
+    const resp = await apiLogin({
+      username: formModel.username.trim(),
+      password: formModel.password,
+      role: formModel.role as Role,
+    }) as any
+
+    const token: string = resp?.token
+    if (!token) throw new Error('服务器未返回 token')
+
+    const storage = formModel.remember ? localStorage : sessionStorage
+    storage.setItem('token', token)
+
+    // 优先使用返回里的 user.role，否则再调 /me
+    let role: Role | null = resp?.user?.role ?? null
+    if (!role) {
+      const me = await apiGetMe() as { id: string; username: string; role: Role }
+      role = me.role
     }
-  ]
+    if (!role) throw new Error('无法获取用户角色')
+
+    storage.setItem('role', role)
+
+    const home = roleHome[role] || '/main'
+    await router.replace(home)
+    ElMessage.success('登录成功')
+  } catch (e: any) {
+    localStorage.removeItem('token'); localStorage.removeItem('role')
+    sessionStorage.removeItem('token'); sessionStorage.removeItem('role')
+    ElMessage.error(e?.response?.data?.message || e?.message || '登录失败')
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
 <template>
   <el-row class="login-page">
     <el-col :span="6" :offset="9" class="form">
-      <!-- 注册相关表单 -->
       <el-form
         :model="formModel"
         :rules="rules"
-        ref="form"
+        ref="formRef"
         size="large"
         autocomplete="off"
-        v-if="isRegister"
-      >
-        <el-form-item>
-          <h1>注册</h1>
-        </el-form-item>
-        <el-form-item prop="username">
-          <el-input
-            v-model="formModel.username"
-            :prefix-icon="User"
-            placeholder="请输入用户名"
-          ></el-input>
-        </el-form-item>
-        <el-form-item prop="password">
-          <el-input
-            v-model="formModel.password"
-            :prefix-icon="Lock"
-            type="password"
-            placeholder="请输入密码"
-          ></el-input>
-        </el-form-item>
-        <el-form-item prop="repassword">
-          <el-input
-            v-model="formModel.repassword"
-            :prefix-icon="Lock"
-            type="password"
-            placeholder="请输入再次密码"
-          ></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-button
-            @click="register"
-            class="button"
-            type="primary"
-            auto-insert-space
-          >
-            注册
-          </el-button>
-        </el-form-item>
-        <el-form-item class="flex">
-          <el-link type="info" :underline="false" @click="isRegister = false">
-            ← 返回
-          </el-link>
-        </el-form-item>
-      </el-form>
-
-      <!-- 登录相关表单 -->
-      <el-form
-        :model="formModel"
-        :rules="rules"
-        ref="form"
-        size="large"
-        autocomplete="off"
-        v-else
+        @keyup.enter="login"
       >
         <el-form-item>
           <h1>登录</h1>
         </el-form-item>
+
         <el-form-item prop="username">
           <el-input
             v-model="formModel.username"
             :prefix-icon="User"
             placeholder="请输入用户名"
-          ></el-input>
+            clearable
+          />
         </el-form-item>
+
         <el-form-item prop="password">
           <el-input
             v-model="formModel.password"
-            name="password"
             :prefix-icon="Lock"
             type="password"
             placeholder="请输入密码"
-          ></el-input>
+            show-password
+            clearable
+          />
         </el-form-item>
+
+        <!-- 身份选择：中文显示，英文值 -->
+        <el-form-item prop="role">
+          <el-select
+            v-model="formModel.role"
+            placeholder="请选择身份"
+            style="width: 100%"
+            clearable
+          >
+            <el-option
+              v-for="opt in roleOptions"
+              :key="opt.value"
+              :label="opt.label"
+              :value="opt.value"
+            />
+          </el-select>
+        </el-form-item>
+
         <el-form-item class="flex">
           <div class="flex">
-            <el-checkbox>记住我</el-checkbox>
+            <el-checkbox v-model="formModel.remember">记住我</el-checkbox>
             <el-link type="primary" :underline="false">忘记密码？</el-link>
           </div>
         </el-form-item>
+
         <el-form-item>
           <el-button
-            @click="login"
             class="button"
             type="primary"
             auto-insert-space
-            >登录</el-button
+            :loading="loading"
+            @click="login"
           >
-        </el-form-item>
-        <el-form-item class="flex">
-          <el-link type="info" :underline="false" @click="isRegister = true">
-            注册 →
-          </el-link>
+            登录
+          </el-button>
         </el-form-item>
       </el-form>
     </el-col>
@@ -173,16 +171,12 @@ const rules = {
     flex-direction: column;
     justify-content: center;
     user-select: none;
-    .title {
-      margin: 0 auto;
-    }
-    .button {
-      width: 100%;
-    }
+    .button { width: 100%; }
     .flex {
       width: 100%;
       display: flex;
       justify-content: space-between;
+      align-items: center;
     }
   }
 }

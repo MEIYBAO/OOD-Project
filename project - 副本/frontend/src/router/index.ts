@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginPage from '@/views/Login/loginPage.vue'
-import MainLayout from '@/views/Layouts/MainLayout.vue'
+import RoleLayout from '@/views/Layouts/RoleLayout.vue' // ← 通用布局（自动识别根前缀）
 
+// 业务页（按需复用到不同角色的 children）
 import Dish from '@/views/Dish/List.vue'
 import Category from '@/views/dish/Category.vue'
 import Supplier from '@/views/Supplier/index.vue'
@@ -19,26 +20,60 @@ const router = createRouter({
     // 登录页（不带侧栏）
     { path: '/login', name: 'Login', component: LoginPage, meta: { public: true } },
 
-    // 主布局（带侧栏）
+    // ===== 管理员主页（带侧栏）=====
     {
-      path: '/main',
-      component: MainLayout,
+      path: '/admin-home',
+      component: RoleLayout,
       children: [
-        { path: '', redirect: 'dish' },        // /main -> /main/dish
-        { path: 'dish', name: 'Dish', component: Dish },
-        { path: 'category', name: 'Category', component: Category },
-        { path: 'supplier', name: 'Supplier', component: Supplier },
-        { path: 'ingredient', name: 'Ingredient', component: Ingredient },
-        { path: 'order', name: 'Order', component: Order },
-        { path: 'inventory', name: 'Inventory', component: Inventory },
-        { path: 'member', name: 'Member', component: Member },
-        { path: 'employee', name: 'Employee', component: Employee },
+        { path: '', redirect: '/admin-home/dish' },
+        // 先复用一套页面，后续可按需裁剪/扩展为管理员专属
+        { path: 'dish', component: Dish },
+        { path: 'category', component: Category },
+        { path: 'supplier', component: Supplier },
+        { path: 'ingredient', component: Ingredient },
+        { path: 'order', component: Order },
+        { path: 'inventory', component: Inventory },
+        { path: 'member', component: Member },
+        { path: 'employee', component: Employee },
       ],
     },
 
-    // 兜底
-    { path: '/:pathMatch(.*)*', redirect: '/login' },
+    // ===== 教师主页（带侧栏）=====
+    {
+      path: '/teacher-home',
+      component: RoleLayout,
+      children: [
+        { path: '', redirect: '/teacher-home/dish' },
+        { path: 'dish', component: Dish },
+        { path: 'order', component: Order },
+        { path: 'ingredient', component: Ingredient },
+        // 需要再加就继续挂子路由
+      ],
+    },
+
+    // ===== 辅导员主页（带侧栏）=====
+    {
+      path: '/counselor-home',
+      component: RoleLayout,
+      children: [
+        { path: '', redirect: '/counselor-home/member' },
+        { path: 'member', component: Member },
+        { path: 'order', component: Order },
+      ],
+    },
+
+    // ===== 学生主页（带侧栏）=====
+    {
+      path: '/student-home',
+      component: RoleLayout,
+      children: [
+        { path: '', redirect: '/student-home/dish' },
+        { path: 'dish', component: Dish },
+        { path: 'order', component: Order },
+      ],
+    },
   ],
 })
+
 
 export default router
