@@ -1,20 +1,37 @@
 // src/api/auth.ts
 import request from '@/utils/request'
 
-export type Role = 'admin' | 'teacher' | 'counselor' | 'student'
+/** 与后端 user_account.role 保持一致 */
+export type Role = 'student' | 'teacher' | 'counselor' | 'manager'
 
-/**
- * 登录：
- * - 若系统存在重名用户名，建议携带 role 一起提交；
- * - 若不携带 role，后端可能返回 409，届时再补充 role 重试。
- */
-export function apiLogin(params: { username: string; password: string; role?: Role }) {
-    // 后端 /api/auth/login 支持 {username, password, role?}
-    return request.post('/auth/login', params)
+export interface LoginResponse {
+    token: string
+    user: {
+        id: string            // 与后端约定：等同于 username
+        username: string
+        role: Role
+        createdAt?: string
+    }
 }
 
-/** 获取当前用户 */
+export interface MeResponse {
+    id: string
+    username: string
+    role: Role
+    createdAt?: string
+}
+
+/**
+ * 登录（仅账号 + 密码）
+ * 后端基于 user_account 表校验，不再接收 role。
+ */
+export function apiLogin(params: { username: string; password: string }) {
+    // 后端路由：/auth/login
+    return request.post<LoginResponse>('/auth/login', params)
+}
+
+/** 获取当前用户信息（需携带 Bearer Token） */
 export function apiGetMe() {
-    // 后端返回 { id, username, role, ... }，多出的字段前端可忽略
-    return request.get('/auth/me')
+    // 后端路由：auth/me
+    return request.get<MeResponse>('/auth/me')
 }

@@ -6,44 +6,33 @@ import { useRouter } from 'vue-router'
 import request from '@/utils/request'
 import { roleHome } from '@/router/role-map'
 
-type Role = 'admin' | 'teacher' | 'counselor' | 'student'
+// 与后端一致（user_account.role）
+type Role = 'student' | 'teacher' | 'counselor' | 'manager'
 
 const router = useRouter()
-
-// 角色选项：中文显示 -> 英文值
-const roleOptions = [
-  { label: '管理员', value: 'admin' as Role },
-  { label: '教师',   value: 'teacher' as Role },
-  { label: '辅导员', value: 'counselor' as Role },
-  { label: '学生',   value: 'student' as Role },
-]
 
 const formRef = ref()
 const formModel = reactive({
   username: '',
   password: '',
-  role: '' as '' | Role,
   remember: false,
 })
 
 const rules = {
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 20, message: '用户名长度 3-20 位', trigger: 'blur' },
+    { required: true, message: '请输入账号', trigger: 'blur' },
+    { min: 3, max: 64, message: '账号长度 3-64 位', trigger: 'blur' },
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
     { pattern: /^\S{6,32}$/, message: '密码需 6-32 位非空字符', trigger: 'blur' },
   ],
-  role: [
-    { required: true, message: '请选择身份', trigger: 'change' },
-  ],
 }
 
 const loading = ref(false)
 
-// API
-const apiLogin = (p: { username: string; password: string; role: Role }) =>
+// API（仅账号+密码）
+const apiLogin = (p: { username: string; password: string }) =>
   request.post('/auth/login', p)
 const apiGetMe = () => request.get('/auth/me')
 
@@ -52,12 +41,12 @@ const login = async () => {
   await formRef.value?.validate()
   loading.value = true
   try {
-    const resp = await apiLogin({
+    const resp: any = await apiLogin({
       username: formModel.username.trim(),
       password: formModel.password,
-      role: formModel.role as Role,
-    }) as any
+    })
 
+    // 兼容你的 request 封装：这里直接从 resp 读取
     const token: string = resp?.token
     if (!token) throw new Error('服务器未返回 token')
 
@@ -67,8 +56,8 @@ const login = async () => {
     // 优先使用返回里的 user.role，否则再调 /me
     let role: Role | null = resp?.user?.role ?? null
     if (!role) {
-      const me = await apiGetMe() as { id: string; username: string; role: Role }
-      role = me.role
+      const me: any = await apiGetMe()
+      role = me?.role ?? null
     }
     if (!role) throw new Error('无法获取用户角色')
 
@@ -78,6 +67,7 @@ const login = async () => {
     await router.replace(home)
     ElMessage.success('登录成功')
   } catch (e: any) {
+    // 清理 token/role
     localStorage.removeItem('token'); localStorage.removeItem('role')
     sessionStorage.removeItem('token'); sessionStorage.removeItem('role')
     ElMessage.error(e?.response?.data?.message || e?.message || '登录失败')
@@ -106,7 +96,7 @@ const login = async () => {
           <el-input
             v-model="formModel.username"
             :prefix-icon="User"
-            placeholder="请输入用户名"
+            placeholder="请输入账号"
             clearable
           />
         </el-form-item>
@@ -120,23 +110,6 @@ const login = async () => {
             show-password
             clearable
           />
-        </el-form-item>
-
-        <!-- 身份选择：中文显示，英文值 -->
-        <el-form-item prop="role">
-          <el-select
-            v-model="formModel.role"
-            placeholder="请选择身份"
-            style="width: 100%"
-            clearable
-          >
-            <el-option
-              v-for="opt in roleOptions"
-              :key="opt.value"
-              :label="opt.label"
-              :value="opt.value"
-            />
-          </el-select>
         </el-form-item>
 
         <el-form-item class="flex">
