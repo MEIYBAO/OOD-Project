@@ -68,7 +68,7 @@ CREATE TABLE courseSelection (
   selection_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   grade DECIMAL(5,2), 
   FirstRepair BOOLEAN DEFAULT 0, 
-  PRIMARY KEY (student_uid, course_uid),
+  PRIMARY KEY (student_uid, course_uid, FirstRepair),
   FOREIGN KEY (student_uid) REFERENCES student(student_uid),
   FOREIGN KEY (course_uid) REFERENCES course(course_uid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
