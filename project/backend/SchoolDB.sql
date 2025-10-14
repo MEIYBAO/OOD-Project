@@ -53,6 +53,38 @@ CREATE TABLE user_account (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE teacher_course (
+  teacher_uid CHAR(10) NOT NULL,
+  course_uid CHAR(10) NOT NULL,
+  semester VARCHAR(16) NOT NULL, 
+  PRIMARY KEY (teacher_uid, course_uid, semester),
+  FOREIGN KEY (teacher_uid) REFERENCES teacher(teacher_uid),
+  FOREIGN KEY (course_uid) REFERENCES course(course_uid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE courseSelection (
+  student_uid CHAR(12) NOT NULL,
+  course_uid CHAR(10) NOT NULL,
+  selection_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  grade DECIMAL(5,2), 
+  FirstRepair BOOLEAN DEFAULT 0, 
+  PRIMARY KEY (student_uid, course_uid),
+  FOREIGN KEY (student_uid) REFERENCES student(student_uid),
+  FOREIGN KEY (course_uid) REFERENCES course(course_uid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE teach_class (
+  class_id CHAR(10) NOT NULL PRIMARY KEY,
+  course_uid CHAR(10) NOT NULL,
+  teacher_uid CHAR(10) NOT NULL,
+  semester VARCHAR(16) NOT NULL,
+  schedule VARCHAR(64), 
+  location VARCHAR(64), 
+  FOREIGN KEY (course_uid) REFERENCES course(course_uid),
+  FOREIGN KEY (teacher_uid) REFERENCES teacher(teacher_uid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
 -- ==========================
 -- 插入 10 条真实风格的示例数据（每张表）
 -- 使用 INSERT IGNORE 保持幂等，便于重复执行脚本
