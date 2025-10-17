@@ -4,7 +4,7 @@
 int main()
 {
     MYSQL *mysql = mysql_init(0);
-    if (!mysql_real_connect(mysql, "localhost", "root", "mysql", "SchoolDB", 0, 0, 0)) // 注意改成自己的
+    if (!mysql_real_connect(mysql, "localhost", "root", "060613", "SchoolDB", 0, 0, 0)) // 注意改成自己的
     {
         printf("连接数据库出错：%s", mysql_error(mysql));
         return -1;
