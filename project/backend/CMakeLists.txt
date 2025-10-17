@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.26)
-project(mysqltest VERSION 0.1.0)
+project(backend VERSION 0.1.0)
 
 # 设置目标名称（可修改）
-set(backend mysqltest)
+set(backend backend)
 
 # 可通过 CMake 缓存覆盖 MySQL 安装根目录（例如 -DMYSQL_ROOT_DIR="C:/Program Files/MySQL/MySQL Server 8.0"）
 set(MYSQL_ROOT_DIR "C:/Program Files/MySQL/MySQL Server 8.0" CACHE PATH "Path to MySQL root (install) directory")

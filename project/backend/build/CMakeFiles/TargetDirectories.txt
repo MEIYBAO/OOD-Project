@@ -1,3 +1,0 @@
-D:/file/OOD-Project/project/backend/build/CMakeFiles/mysqltest.dir
-D:/file/OOD-Project/project/backend/build/CMakeFiles/edit_cache.dir
-D:/file/OOD-Project/project/backend/build/CMakeFiles/rebuild_cache.dir

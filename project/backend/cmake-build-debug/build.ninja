@@ -11,7 +11,7 @@
 # =============================================================================
 
 # =============================================================================
-# Project: mysqltest
+# Project: backend
 # Configurations: Debug
 # =============================================================================
 
@@ -41,38 +41,38 @@ include CMakeFiles/rules.ninja
 
 cmake_ninja_workdir = D$:/file/OOD-Project/project/backend/cmake-build-debug/
 # =============================================================================
-# Object build statements for EXECUTABLE target mysqltest
+# Object build statements for EXECUTABLE target backend
 
 
 #############################################
-# Order-only phony target for mysqltest
+# Order-only phony target for backend
 
-build cmake_object_order_depends_target_mysqltest: phony || CMakeFiles/mysqltest.dir
+build cmake_object_order_depends_target_backend: phony || CMakeFiles/backend.dir
 
-build CMakeFiles/mysqltest.dir/cpp/main.cpp.obj: CXX_COMPILER__mysqltest_unscanned_Debug D$:/file/OOD-Project/project/backend/cpp/main.cpp || cmake_object_order_depends_target_mysqltest
-  DEP_FILE = CMakeFiles\mysqltest.dir\cpp\main.cpp.obj.d
+build CMakeFiles/backend.dir/cpp/main.cpp.obj: CXX_COMPILER__backend_unscanned_Debug D$:/file/OOD-Project/project/backend/cpp/main.cpp || cmake_object_order_depends_target_backend
+  DEP_FILE = CMakeFiles\backend.dir\cpp\main.cpp.obj.d
   FLAGS = -g -fdiagnostics-color=always
   INCLUDES = -I"C:/Program Files/MySQL/MySQL Server 8.0/include"
-  OBJECT_DIR = CMakeFiles\mysqltest.dir
-  OBJECT_FILE_DIR = CMakeFiles\mysqltest.dir\cpp
+  OBJECT_DIR = CMakeFiles\backend.dir
+  OBJECT_FILE_DIR = CMakeFiles\backend.dir\cpp
 
 
 # =============================================================================
-# Link build statements for EXECUTABLE target mysqltest
+# Link build statements for EXECUTABLE target backend
 
 
 #############################################
-# Link the executable mysqltest.exe
+# Link the executable backend.exe
 
-build mysqltest.exe: CXX_EXECUTABLE_LINKER__mysqltest_Debug CMakeFiles/mysqltest.dir/cpp/main.cpp.obj | C$:/Program$ Files/MySQL/MySQL$ Server$ 8.0/lib/libmysql.lib
+build backend.exe: CXX_EXECUTABLE_LINKER__backend_Debug CMakeFiles/backend.dir/cpp/main.cpp.obj | C$:/Program$ Files/MySQL/MySQL$ Server$ 8.0/lib/libmysql.lib
   FLAGS = -g
   LINK_LIBRARIES = "C:/Program Files/MySQL/MySQL Server 8.0/lib/libmysql.lib"  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
-  OBJECT_DIR = CMakeFiles\mysqltest.dir
+  OBJECT_DIR = CMakeFiles\backend.dir
   POST_BUILD = cmd.exe /C "cd /D D:\file\OOD-Project\project\backend\cmake-build-debug && "D:\CLion 2023.2.2\bin\cmake\win\x64\bin\cmake.exe" -E copy_if_different "C:/Program Files/MySQL/MySQL Server 8.0/lib/libmysql.dll" D:/file/OOD-Project/project/backend/cmake-build-debug"
   PRE_LINK = cd .
-  TARGET_FILE = mysqltest.exe
-  TARGET_IMPLIB = libmysqltest.dll.a
-  TARGET_PDB = mysqltest.exe.dbg
+  TARGET_FILE = backend.exe
+  TARGET_IMPLIB = libbackend.dll.a
+  TARGET_PDB = backend.exe.dbg
 
 
 #############################################
@@ -100,7 +100,7 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 # =============================================================================
 # Target aliases.
 
-build mysqltest: phony mysqltest.exe
+build backend: phony backend.exe
 
 # =============================================================================
 # Folder targets.
@@ -110,7 +110,7 @@ build mysqltest: phony mysqltest.exe
 #############################################
 # Folder: D:/file/OOD-Project/project/backend/cmake-build-debug
 
-build all: phony mysqltest.exe
+build all: phony backend.exe
 
 # =============================================================================
 # Built-in targets
