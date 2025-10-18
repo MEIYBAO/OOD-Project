@@ -1,7 +1,7 @@
 <template>
   <div class="member-list">
     <div class="page-header">
-      <h2>会员管理</h2>
+      <h2>管理</h2>
       <el-button type="primary" @click="handleAdd">添加会员</el-button>
     </div>
 

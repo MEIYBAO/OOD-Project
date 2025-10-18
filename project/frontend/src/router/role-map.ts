@@ -11,10 +11,10 @@ export const roleHome: Record<Role, string> = {
 
 /** 各角色允许访问的“相对子路由”清单（基于 RoleLayout 的 children） */
 export const roleChildren: Record<Role, string[]> = {
-    manager: ['dish', 'category', 'supplier', 'ingredient', 'order', 'inventory', 'member', 'employee'],
-    teacher: ['dish', 'order', 'ingredient'],
-    counselor: ['member', 'order'],
-    student: ['dish', 'order'],
+    manager: ['dish', 'category', 'supplier', 'ingredient', 'order', 'inventory', 'member', 'employee', 'manageInfo'],
+    teacher: [],
+    counselor: [],
+    student: [],
 }
 
 /** 获取角色首页（拿不到角色时回退 /main） */

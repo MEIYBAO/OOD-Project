@@ -63,8 +63,9 @@ const allMenus = [
   { key: 'ingredient', label: '原材料管理', icon: Edit },
   { key: 'order',      label: '订单管理',   icon: Finished },
   { key: 'inventory',  label: '库存管理',   icon: MessageBox },
-  { key: 'member',     label: '会员管理',   icon: Crop },
+  { key: 'member',     label: '管理',   icon: Crop },
   { key: 'employee',   label: '员工管理',   icon: ZoomIn },
+  { key: 'manageInfo',  label: '信息管理',   icon: ZoomIn },
 ]
 
 // 5) 先按角色白名单过滤，再校验“对应路由已注册”（避免死链）

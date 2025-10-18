@@ -4,18 +4,11 @@ import LoginPage from '@/views/Login/loginPage.vue'
 import RoleLayout from '@/views/Layouts/RoleLayout.vue'
 
 // 业务页（可在不同角色下复用）
-import Dish from '@/views/Dish/List.vue'
-import Category from '@/views/dish/Category.vue'
-import Supplier from '@/views/Supplier/index.vue'
-import Ingredient from '@/views/Ingredient/index.vue'
-import Order from '@/views/Order/List.vue'
-import Inventory from '@/views/Inventory/Record.vue'
-import Member from '@/views/Member/index.vue'
-import Employee from '@/views/Employee/index.vue'
+import manageInfo from '@/views/manager/manageInfo.vue'
 
 // 角色 → 主页映射（与后端 user_account.role 一致）
 export const roleHome: Record<string, string> = {
-  manager: '/manager-home/dish',
+  manager: '/manager-home/manageInfo',
   teacher: '/teacher-home/dish',
   counselor: '/counselor-home/member',
   student: '/student-home/dish',
@@ -36,15 +29,8 @@ const router = createRouter({
       component: RoleLayout,
       meta: { role: 'manager' },
       children: [
-        { path: '', redirect: '/manager-home/dish' },
-        { path: 'dish', component: Dish },
-        { path: 'category', component: Category },
-        { path: 'supplier', component: Supplier },
-        { path: 'ingredient', component: Ingredient },
-        { path: 'order', component: Order },
-        { path: 'inventory', component: Inventory },
-        { path: 'member', component: Member },
-        { path: 'employee', component: Employee },
+        { path: '', redirect: '/manager-home/manageInfo' },
+        { path: 'manageInfo', component: manageInfo },
       ],
     },
 
@@ -55,9 +41,6 @@ const router = createRouter({
       meta: { role: 'teacher' },
       children: [
         { path: '', redirect: '/teacher-home/dish' },
-        { path: 'dish', component: Dish },
-        { path: 'order', component: Order },
-        { path: 'ingredient', component: Ingredient },
       ],
     },
 
@@ -68,8 +51,6 @@ const router = createRouter({
       meta: { role: 'counselor' },
       children: [
         { path: '', redirect: '/counselor-home/member' },
-        { path: 'member', component: Member },
-        { path: 'order', component: Order },
       ],
     },
 
@@ -80,8 +61,6 @@ const router = createRouter({
       meta: { role: 'student' },
       children: [
         { path: '', redirect: '/student-home/dish' },
-        { path: 'dish', component: Dish },
-        { path: 'order', component: Order },
       ],
     },
 

@@ -4,7 +4,6 @@ const mysql = require('mysql2/promise')
 const cors = require('cors')
 const dotenv = require('dotenv')
 
-// 加载环境变量
 dotenv.config()
 
 const app = express()
@@ -13,7 +12,7 @@ const port = process.env.PORT || 3000
 // ===== 中间件 =====
 app.use(cors({
   origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:5173'],
-  credentials: false,
+  credentials: false, // 如需携带 cookie 再改成 true；Bearer 不需要
 }))
 app.use(express.json({ limit: '2mb' }))
 app.use(express.urlencoded({ extended: true }))
@@ -23,7 +22,7 @@ const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'restaurant_db',
+  database: process.env.DB_NAME || 'schooldb',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -42,17 +41,9 @@ app.get('/api/test-db', async (_req, res) => {
 })
 
 // ===== 业务路由 =====
-// ⚠️ 注意：这些路由文件需按 CommonJS 导出函数：module.exports = (pool) => router
-app.use('/api/auth', require('./routes/auth')(pool))           // << 新增：登录/获取个人信息
-app.use('/api/category', require('./routes/category')(pool))
-app.use('/api/dish', require('./routes/dish')(pool))
-app.use('/api/supplier', require('./routes/supplier')(pool))
-app.use('/api/ingredient', require('./routes/ingredient')(pool))
-app.use('/api/employee', require('./routes/employee')(pool))
-app.use('/api/member', require('./routes/member')(pool))
-app.use('/api/order', require('./routes/order')(pool))
-app.use('/api/inventory', require('./routes/inventory')(pool))
-app.use('/api/statistics', require('./routes/statistics')(pool))
+// 这些路由文件需导出函数：module.exports = (pool) => router
+app.use('/api/auth', require('./routes/auth')(pool))   // 登录/个人信息
+app.use('/api/users', require('./routes/users')(pool))  // ✅ 用户管理（新增这行）
 
 // ===== 静态资源 =====
 app.use(express.static('public'))
@@ -67,12 +58,7 @@ app.listen(port, () => {
   console.log(`服务器运行在 http://localhost:${port}`)
 })
 
-// ===== 进程级错误处理 =====
-process.on('uncaughtException', (err) => {
-  console.error('未捕获的异常:', err)
-})
-process.on('unhandledRejection', (reason) => {
-  console.error('未处理的 Promise 拒绝:', reason)
-})
+process.on('uncaughtException', (err) => console.error('未捕获的异常:', err))
+process.on('unhandledRejection', (reason) => console.error('未处理的 Promise 拒绝:', reason))
 
 module.exports = app

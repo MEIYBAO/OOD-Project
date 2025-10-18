@@ -1,0 +1,7 @@
+"D:\CLion 2023.2.2\bin\cmake\win\x64\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=D:/CLion 2023.2.2/bin/ninja/win/x64/ninja.exe" -G Ninja -S D:\file\OOD-Project\project\backend -B D:\file\OOD-Project\project\backend\cmake-build-debug
+-- Found MySQL include dir: C:/Program Files/MySQL/MySQL Server 8.0/include
+-- Found MySQL library: C:/Program Files/MySQL/MySQL Server 8.0/lib/libmysql.lib
+-- Found MySQL DLL: C:/Program Files/MySQL/MySQL Server 8.0/lib/libmysql.dll
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: D:/file/OOD-Project/project/backend/cmake-build-debug
