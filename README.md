@@ -1,3 +1,6 @@
+
+<img width="1184" height="477" alt="image" src="https://github.com/user-attachments/assets/ea90354a-8830-4eb2-8f72-b7ee22ac304f" />
+
 # OOD-Project
 面向对象程序设计课程设计
 
