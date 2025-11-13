@@ -162,7 +162,6 @@ void CManagementDlg::OnBnClickedlogin_button()
 
 	// TODO: 在此添加控件通知处理程序代码
 
-	// 初始化MySQL
 	MYSQL* conn = mysql_init(NULL);
 	if (conn == NULL) {
 		AfxMessageBox(_T("MySQL初始化失败！"));
@@ -186,18 +185,53 @@ void CManagementDlg::OnBnClickedlogin_button()
 	CStringA usernameA(strusername);
 	CStringA passwordA(strpassword);
 	CStringA sqlA;
-	sqlA.Format("SELECT * FROM user_account WHERE username='%s' AND password=MD5('%s')",
+	sqlA.Format("SELECT role FROM user_account WHERE username='%s' AND password=MD5('%s')",
 		usernameA.GetString(), passwordA.GetString());
 
 	if (mysql_query(conn, sqlA.GetString()) == 0) {
 		MYSQL_RES* res = mysql_store_result(conn);
 		if (res && mysql_num_rows(res) > 0) {
+			MYSQL_ROW row = mysql_fetch_row(res);
+			CStringA roleA(row[0] ? row[0] : "");
+			CString role(roleA);
+
 			AfxMessageBox(_T("登录成功！"));
 			mysql_free_result(res);
 			mysql_close(conn);
-			Testdlg dlg;
+
 			EndDialog(IDOK);
-			dlg.DoModal();
+
+			if (role == _T("student")) {
+				// 学生界面
+				// StudentDlg dlg;
+				// dlg.DoModal();
+				Testdlg dlg; // 示例用Testdlg
+				dlg.DoModal();
+			}
+			else if (role == _T("teacher")) {
+				// 教师界面
+				// TeacherDlg dlg;
+				// dlg.DoModal();
+				Testdlg dlg; // 示例用Testdlg
+				dlg.DoModal();
+			}
+			else if (role == _T("counselor")) {
+				// 辅导员界面
+				// CounselorDlg dlg;
+				// dlg.DoModal();
+				Testdlg dlg; // 示例用Testdlg
+				dlg.DoModal();
+			}
+			else if (role == _T("manager")) {
+				// 管理员界面
+				// ManagerDlg dlg;
+				// dlg.DoModal();
+				Testdlg dlg; // 示例用Testdlg
+				dlg.DoModal();
+			}
+			else {
+				AfxMessageBox(_T("未知身份，无法进入系统！"));
+			}
 			return;
 		}
 		else {
