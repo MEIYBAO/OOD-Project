@@ -1,8 +1,3 @@
-﻿  pch.cpp
-  Management.cpp
-  ManagementDlg.cpp
-  Testdlg.cpp
-  正在生成代码...
-  Management.vcxproj -> D:\file\OOD-Project\Management\x64\Debug\Management.exe
+﻿  Management.vcxproj -> D:\file\OOD-Project\Management\x64\Debug\Management.exe
   'pwsh.exe' 不是内部或外部命令，也不是可运行的程序
   或批处理文件。

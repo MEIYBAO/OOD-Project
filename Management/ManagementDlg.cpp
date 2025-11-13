@@ -8,6 +8,7 @@
 #include "ManagementDlg.h"
 #include "afxdialogex.h"
 #include "Testdlg.h"
+#include <mysql.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -160,26 +161,55 @@ void CManagementDlg::OnBnClickedlogin_button()
 {
 
 	// TODO: 在此添加控件通知处理程序代码
-	
+
+	// 初始化MySQL
+	MYSQL* conn = mysql_init(NULL);
+	if (conn == NULL) {
+		AfxMessageBox(_T("MySQL初始化失败！"));
+		return;
+	}
+
+	// 连接数据库
+	if (!mysql_real_connect(conn, "localhost", "root", "060613", "Schooldb", 3306, NULL, 0)) {
+		AfxMessageBox(_T("数据库连接失败！"));
+		mysql_close(conn);
+		return;
+	}
+	// 获取用户输入的用户名和密码
 	CString strusername;
 	GetDlgItemText(username_input, strusername);
 
 	CString strpassword;
 	GetDlgItemText(password_input, strpassword);
 
-	if (strusername == "admin" && strpassword == "123456")
-	{
-		AfxMessageBox(_T("登录成功！"));
-		Testdlg dlg;
-		EndDialog(IDOK);
-		dlg.DoModal();
+	// 构造SQL语句
+	CStringA usernameA(strusername);
+	CStringA passwordA(strpassword);
+	CStringA sqlA;
+	sqlA.Format("SELECT * FROM user_account WHERE username='%s' AND password=MD5('%s')",
+		usernameA.GetString(), passwordA.GetString());
+
+	if (mysql_query(conn, sqlA.GetString()) == 0) {
+		MYSQL_RES* res = mysql_store_result(conn);
+		if (res && mysql_num_rows(res) > 0) {
+			AfxMessageBox(_T("登录成功！"));
+			mysql_free_result(res);
+			mysql_close(conn);
+			Testdlg dlg;
+			EndDialog(IDOK);
+			dlg.DoModal();
+			return;
+		}
+		else {
+			AfxMessageBox(_T("用户名或密码错误！"));
+			if (res) mysql_free_result(res);
+		}
 	}
-	else
-	{
-		AfxMessageBox(_T("用户名或密码错误！"));
+	else {
+		AfxMessageBox(_T("查询失败！"));
 	}
 
-
+	mysql_close(conn);
 }
 
 void CManagementDlg::OnBnClickedexit_button()
