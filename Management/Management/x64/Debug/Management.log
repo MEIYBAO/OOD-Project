@@ -1,15 +1,17 @@
 ﻿  CDatabaseHelper.cpp
-D:\Projects\OOD\OOD-Project\Management\CDatabaseHelper.cpp(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-D:\Projects\OOD\OOD-Project\Management\CDatabaseHelper.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+D:\file\OOD-Project\Management\CDatabaseHelper.cpp(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+D:\file\OOD-Project\Management\CDatabaseHelper.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
   (编译源文件“/CDatabaseHelper.cpp”)
   
   ManagementDlg.cpp
-D:\Projects\OOD\OOD-Project\Management\CDatabaseHelper.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+D:\file\OOD-Project\Management\CDatabaseHelper.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
   (编译源文件“/ManagementDlg.cpp”)
   
   managerdlg.cpp
-D:\Projects\OOD\OOD-Project\Management\CDatabaseHelper.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+D:\file\OOD-Project\Management\CDatabaseHelper.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
   (编译源文件“/managerdlg.cpp”)
   
   正在生成代码...
-  Management.vcxproj -> D:\Projects\OOD\OOD-Project\Management\x64\Debug\Management.exe
+managerdlg.obj : error LNK2005: "class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > PASS_WORD" (?PASS_WORD@@3V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@A) 已经在 ManagementDlg.obj 中定义
+pch.obj : error LNK2005: "class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > PASS_WORD" (?PASS_WORD@@3V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@A) 已经在 ManagementDlg.obj 中定义
+D:\file\OOD-Project\Management\x64\Debug\Management.exe : fatal error LNK1169: 找到一个或多个多重定义的符号

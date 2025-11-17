@@ -42,6 +42,9 @@
     <ClInclude Include="CDatabaseHelper.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="env.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Management.cpp">

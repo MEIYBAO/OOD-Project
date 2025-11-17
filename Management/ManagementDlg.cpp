@@ -10,6 +10,7 @@
 #include "Testdlg.h"
 #include "managerdlg.h"
 #include <mysql.h>
+#include "env.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -170,7 +171,7 @@ void CManagementDlg::OnBnClickedlogin_button()
 	}
 
 	// 连接数据库
-	if (!mysql_real_connect(conn, "localhost", "root", "mysql", "Schooldb", 3306, NULL, 0)) {
+	if (!mysql_real_connect(conn, "localhost", "root", PASS_WORD.c_str(), "Schooldb", 3306, NULL, 0)) {
 		AfxMessageBox(_T("数据库连接失败！"));
 		mysql_close(conn);
 		return;

@@ -187,6 +187,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CDatabaseHelper.h" />
+    <ClInclude Include="env.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Management.h" />
     <ClInclude Include="ManagementDlg.h" />
