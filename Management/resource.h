@@ -8,7 +8,7 @@
 #define IDD_MANAGEMENT_DIALOG           102
 #define IDR_MAINFRAME                   128
 #define IDD_DIALOG1                     129
-#define IDD_DIALOG2                     132
+#define IDD_MANAGER_DIALOG              132
 #define login_button                    1000
 #define exit_button                     1001
 #define username_input                  1002

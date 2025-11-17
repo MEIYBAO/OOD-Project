@@ -10,7 +10,7 @@ public:
     // 数据库连接管理
     BOOL Connect(const CString& strHost = _T("localhost"),
         const CString& strUser = _T("root"),
-        const CString& strPassword = _T("060613"),
+        const CString& strPassword = _T("mysql"),
         const CString& strDatabase = _T("Schooldb"),
         int nPort = 3306);
     void Disconnect();
