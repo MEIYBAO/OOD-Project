@@ -8,7 +8,7 @@
 #define IDD_MANAGEMENT_DIALOG           102
 #define IDR_MAINFRAME                   128
 #define IDD_DIALOG1                     129
-#define IDD_DIALOG2                     132
+#define IDD_MANAGER_DLG                 132
 #define IDD_teacher_DLG                 133
 #define IDD_class_student               134
 #define login_button                    1000

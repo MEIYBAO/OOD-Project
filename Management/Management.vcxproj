@@ -93,7 +93,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>C:\Program Files\MySQL\MySQL Server 9.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\MySQL\MySQL Server 8.0\include;C:\Program Files\MySQL\MySQL Server 9.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -189,6 +189,7 @@
     <ClInclude Include="CDatabaseHelper.h" />
     <ClInclude Include="class_students.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="Global.h" />
     <ClInclude Include="Management.h" />
     <ClInclude Include="ManagementDlg.h" />
     <ClInclude Include="managerdlg.h" />
@@ -201,6 +202,7 @@
   <ItemGroup>
     <ClCompile Include="CDatabaseHelper.cpp" />
     <ClCompile Include="class_students.cpp" />
+    <ClCompile Include="Global.cpp" />
     <ClCompile Include="Management.cpp" />
     <ClCompile Include="ManagementDlg.cpp" />
     <ClCompile Include="managerdlg.cpp" />

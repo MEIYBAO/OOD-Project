@@ -8,6 +8,7 @@
 #include "ManagementDlg.h"
 #include "afxdialogex.h"
 #include <mysql.h>
+#include "Global.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -168,7 +169,7 @@ void CManagementDlg::OnBnClickedlogin_button()
 	}
 
 	// 连接数据库
-	if (!mysql_real_connect(conn, "localhost", "root", "djb1234567890", "Schooldb", 3306, NULL, 0)) {
+	if (!mysql_real_connect(conn, "localhost", "root", mysql_password.c_str(), "Schooldb", 3306, NULL, 0)) {
 		AfxMessageBox(_T("数据库连接失败！"));
 		mysql_close(conn);
 		return;
