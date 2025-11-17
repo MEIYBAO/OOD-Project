@@ -69,14 +69,7 @@
 - email VARCHAR(255)
 	- 邮箱。
 
-5) student_counselor
-- student_uid CHAR(12)
-	- 学生 UID，外键，引用 `student(student_uid)`。
-- counselor_uid CHAR(10)
-	- 辅导员 UID，外键，引用 `counselor(counselor_uid)`。
-- PRIMARY KEY (student_uid, counselor_uid)
-	- 用途：避免重复记录一对学生-辅导员关系。
-
+5) 
 6) courseSelection
 - student_uid CHAR(12)
 	- 外键，引用 `student(student_uid)`。

@@ -34,7 +34,6 @@ BEGIN_MESSAGE_MAP(manager, CDialogEx)
 	ON_BN_CLICKED(teacher_show, &manager::OnBnClickedteacher_show)
     ON_BN_CLICKED(course_show, &manager::OnBnClickedcourse_show)
     ON_BN_CLICKED(counselor_show, &manager::OnBnClickedcounselor_show)
-	ON_BN_CLICKED(student_counselor_show, &manager::OnBnClickedstudent_counselor_show)
 END_MESSAGE_MAP()
 
 
@@ -95,10 +94,3 @@ void manager::OnBnClickedcounselor_show()
     }
 }
 
-void manager::OnBnClickedstudent_counselor_show()
-{
-    if (!m_dbHelper.DisplayTableData(m_list, _T("student_counselor")))
-    {
-        AfxMessageBox(_T("显示辅导员分配数据失败！"));
-    }
-}

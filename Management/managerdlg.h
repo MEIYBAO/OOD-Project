@@ -29,5 +29,4 @@ public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnBnClickedcourse_show();
 	afx_msg void OnBnClickedcounselor_show();
-	afx_msg void OnBnClickedstudent_counselor_show();
 };

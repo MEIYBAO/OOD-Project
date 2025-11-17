@@ -38,14 +38,6 @@ CREATE TABLE counselor (
   email VARCHAR(255)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE student_counselor (
-  student_uid CHAR(12) NOT NULL,
-  counselor_uid CHAR(10) NOT NULL,
-  PRIMARY KEY (student_uid, counselor_uid),
-  FOREIGN KEY (student_uid) REFERENCES student(student_uid),
-  FOREIGN KEY (counselor_uid) REFERENCES counselor(counselor_uid)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 CREATE TABLE user_account (
   username VARCHAR(64) PRIMARY KEY,
   password CHAR(32) NOT NULL,
@@ -142,19 +134,6 @@ INSERT IGNORE INTO course (course_uid, course_name, credits, category) VALUES
 ('COURSE0009','信息安全概论',2,'选修'),
 ('COURSE0010','多媒体技术',2,'选修');
 
--- student_counselor：每位学生分配一位辅导员（10 条）
-INSERT IGNORE INTO student_counselor (student_uid, counselor_uid) VALUES
-('202400000001','C000000001'),
-('202400000002','C000000002'),
-('202400000003','C000000003'),
-('202400000004','C000000004'),
-('202400000005','C000000005'),
-('202400000006','C000000006'),
-('202400000007','C000000007'),
-('202400000008','C000000008'),
-('202400000009','C000000009'),
-('202400000010','C000000010');
-
 -- user_account：为所有学生/教师/辅导员创建账户，若已存在则忽略
 -- 从 student 表插入用户（用户名 = student_uid），密码默认为 MD5('123456')
 INSERT IGNORE INTO user_account (username, password, role)
@@ -174,3 +153,50 @@ INSERT INTO user_account (username, password, role) VALUES
 ('djb', MD5('123456'), 'manager');
 
 
+-- ==========================
+-- 创建触发器来处理删除操作，避免外键约束错误
+-- ==========================
+
+-- 删除已存在的触发器（如果存在）
+DROP TRIGGER IF EXISTS before_delete_student;
+DROP TRIGGER IF EXISTS before_delete_teacher;
+DROP TRIGGER IF EXISTS before_delete_counselor;
+
+-- 创建删除student前的触发器
+DELIMITER $$
+CREATE TRIGGER before_delete_student
+BEFORE DELETE ON student
+FOR EACH ROW
+BEGIN
+    -- 删除courseSelection表中相关的选课记录
+    DELETE FROM courseSelection WHERE student_uid = OLD.student_uid;
+    -- 删除user_account表中对应的用户账户
+    DELETE FROM user_account WHERE username = OLD.student_uid;
+END$$
+DELIMITER ;
+
+-- 创建删除teacher前的触发器
+DELIMITER $$
+CREATE TRIGGER before_delete_teacher
+BEFORE DELETE ON teacher
+FOR EACH ROW
+BEGIN
+    -- 删除teacher_course表中相关的授课记录
+    DELETE FROM teacher_course WHERE teacher_uid = OLD.teacher_uid;
+    -- 删除teach_class表中相关的教学班记录
+    DELETE FROM teach_class WHERE teacher_uid = OLD.teacher_uid;
+    -- 删除user_account表中对应的用户账户
+    DELETE FROM user_account WHERE username = OLD.teacher_uid;
+END$$
+DELIMITER ;
+
+-- 创建删除counselor前的触发器
+DELIMITER $$
+CREATE TRIGGER before_delete_counselor
+BEFORE DELETE ON counselor
+FOR EACH ROW
+BEGIN
+    -- 删除user_account表中对应的用户账户
+    DELETE FROM user_account WHERE username = OLD.counselor_uid;
+END$$
+DELIMITER ;
