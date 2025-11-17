@@ -29,4 +29,12 @@ public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnBnClickedcourse_show();
 	afx_msg void OnBnClickedcounselor_show();
+
+	afx_msg void OnListRClick(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnMenuAdd();
+	afx_msg void OnMenuEdit();
+	afx_msg void OnMenuDelete();
+
+private:
+	CString m_currentTable;
 };
