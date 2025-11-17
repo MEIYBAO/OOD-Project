@@ -14,7 +14,7 @@ public:
 
 // 对话框数据
 #ifdef AFX_DESIGN_TIME
-	enum { IDD = IDD_MANAGER_DIALOG};
+	enum { IDD = IDD_DIALOG2 };
 #endif
 
 protected:

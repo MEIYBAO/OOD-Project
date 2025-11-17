@@ -42,7 +42,10 @@
     <ClInclude Include="CDatabaseHelper.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="env.h">
+    <ClInclude Include="teacherdlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="class_students.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -63,6 +66,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="CDatabaseHelper.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="teacherdlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="class_students.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

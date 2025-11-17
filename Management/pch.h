@@ -10,8 +10,8 @@
 // 添加要在此处预编译的标头
 #include "framework.h"
 #include "mysql.h"
-#include "string"
-#include "env.h"
-
+#include "Testdlg.h"
+#include "managerdlg.h"
+#include "teacherdlg.h"
 
 #endif //PCH_H

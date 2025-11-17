@@ -1,7 +1,5 @@
 #pragma once
 #include "mysql.h"
-#include "env.h"
-#include "afxstr.h"
 
 class CDatabaseHelper
 {
@@ -12,8 +10,7 @@ public:
     // 数据库连接管理
     BOOL Connect(const CString& strHost = _T("localhost"),
         const CString& strUser = _T("root"),
-
-		const CString& strPassword = CString(PASS_WORD.c_str()),
+        const CString& strPassword = _T("djb1234567890"),
         const CString& strDatabase = _T("Schooldb"),
         int nPort = 3306);
     void Disconnect();

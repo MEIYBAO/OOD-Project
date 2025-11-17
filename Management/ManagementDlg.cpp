@@ -7,10 +7,7 @@
 #include "Management.h"
 #include "ManagementDlg.h"
 #include "afxdialogex.h"
-#include "Testdlg.h"
-#include "managerdlg.h"
 #include <mysql.h>
-#include "env.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -171,7 +168,7 @@ void CManagementDlg::OnBnClickedlogin_button()
 	}
 
 	// 连接数据库
-	if (!mysql_real_connect(conn, "localhost", "root", PASS_WORD.c_str(), "Schooldb", 3306, NULL, 0)) {
+	if (!mysql_real_connect(conn, "localhost", "root", "djb1234567890", "Schooldb", 3306, NULL, 0)) {
 		AfxMessageBox(_T("数据库连接失败！"));
 		mysql_close(conn);
 		return;
@@ -214,8 +211,8 @@ void CManagementDlg::OnBnClickedlogin_button()
 				// 教师界面
 				// TeacherDlg dlg;
 				// dlg.DoModal();
-				Testdlg dlg; // 示例用Testdlg
-				dlg.DoModal();
+				teacherdlg teacher; // 示例用Testdlg
+				teacher.DoModal();
 			}
 			else if (role == _T("counselor")) {
 				// 辅导员界面

@@ -91,11 +91,18 @@ BOOL CDatabaseHelper::DisplayTableData(CListCtrl& listCtrl,
     // 清空List Control
     listCtrl.DeleteAllItems();
 
-    // 删除所有列
-    int nColumnCount = listCtrl.GetHeaderCtrl()->GetItemCount();
-    for (int i = nColumnCount - 1; i >= 0; i--)
+    // 删除所有列（安全检查：仅在控件有效且存在列时删除）
+    if (listCtrl.GetSafeHwnd())
     {
-        listCtrl.DeleteColumn(i);
+        CHeaderCtrl* pHeader = listCtrl.GetHeaderCtrl();
+        if (pHeader != nullptr)
+        {
+            int nColumnCount = pHeader->GetItemCount();
+            for (int i = nColumnCount - 1; i >= 0; --i)
+            {
+                listCtrl.DeleteColumn(i);
+            }
+        }
     }
 
     // 构建SQL查询

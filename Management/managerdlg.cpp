@@ -13,7 +13,7 @@
 IMPLEMENT_DYNAMIC(manager, CDialogEx)
 
 manager::manager(CWnd* pParent /*=nullptr*/)
-	: CDialogEx(IDD_MANAGER_DIALOG, pParent)
+	: CDialogEx(IDD_DIALOG2, pParent)
 {
 
 }
