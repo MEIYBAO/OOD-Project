@@ -13,6 +13,13 @@
 #define exit_button                     1001
 #define username_input                  1002
 #define password_input                  1003
+#define LIST                            1004
+#define student_show                    1006
+#define teacher_show                    1007
+#define course_show                     1008
+#define counselor_show                  1009
+#define counselor_show2                 1010
+#define student_counselor_show          1010
 
 // Next default values for new objects
 // 
@@ -20,7 +27,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        134
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1003
+#define _APS_NEXT_CONTROL_VALUE         1010
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

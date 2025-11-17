@@ -36,6 +36,12 @@
     <ClInclude Include="Testdlg.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="managerdlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CDatabaseHelper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Management.cpp">
@@ -48,6 +54,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Testdlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="managerdlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CDatabaseHelper.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

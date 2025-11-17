@@ -8,6 +8,7 @@
 #include "ManagementDlg.h"
 #include "afxdialogex.h"
 #include "Testdlg.h"
+#include "managerdlg.h"
 #include <mysql.h>
 
 #ifdef _DEBUG
@@ -223,11 +224,8 @@ void CManagementDlg::OnBnClickedlogin_button()
 				dlg.DoModal();
 			}
 			else if (role == _T("manager")) {
-				// 管理员界面
-				// ManagerDlg dlg;
-				// dlg.DoModal();
-				Testdlg dlg; // 示例用Testdlg
-				dlg.DoModal();
+				manager manager_dlg; 
+				manager_dlg.DoModal();
 			}
 			else {
 				AfxMessageBox(_T("未知身份，无法进入系统！"));
