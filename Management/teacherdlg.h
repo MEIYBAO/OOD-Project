@@ -28,4 +28,7 @@ public:
 
 	virtual BOOL OnInitDialog();
 	afx_msg void OnLvnItemchangedworkpanel(NMHDR* pNMHDR, LRESULT* pResult);
+
+	afx_msg void OnListRClick(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnShowClassStudents();
 };
