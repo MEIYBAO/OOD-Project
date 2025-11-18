@@ -5,6 +5,7 @@
 #include "Management.h"
 #include "afxdialogex.h"
 #include "teacherdlg.h"
+#include "class_students.h" // 添加
 #include <afxdb.h>
 
 
@@ -98,14 +99,59 @@ void teacherdlg::OnListRClick(NMHDR* pNMHDR, LRESULT* pResult)
 
 void teacherdlg::OnShowClassStudents()
 {
-	// TODO: 弹出新增对话框，插入数据库并刷新列表
-	CDialogEx dlg(IDD_class_student, this);
-	// 以模态方式显示对话框，用户按下确定后刷新列表数据
-	if (dlg.DoModal() == IDOK)
+	// 获取选中项
+	POSITION pos = m_list.GetFirstSelectedItemPosition();
+	if (pos == nullptr)
 	{
-		if (!m_dbHelper.DisplayTableData(m_list, _T("teach_class")))
+		AfxMessageBox(_T("请先选择一个教学班记录！"));
+		return;
+	}
+	int nItem = m_list.GetNextSelectedItem(pos);
+
+	// 查找列名为 course_uid 的列索引
+	int nColumnCount = 0;
+	CHeaderCtrl* pHeader = m_list.GetHeaderCtrl();
+	if (pHeader)
+		nColumnCount = pHeader->GetItemCount();
+
+	int colIndex = -1;
+	TCHAR szText[256] = { 0 };
+	for (int i = 0; i < nColumnCount; ++i)
+	{
+		HDITEM hdi = { 0 };
+		hdi.mask = HDI_TEXT;
+		hdi.pszText = szText;
+		hdi.cchTextMax = _countof(szText);
+		if (pHeader->GetItem(i, &hdi))
 		{
-			AfxMessageBox(_T("刷新课程数据失败！"));
+			CString colName = szText;
+			if (colName.CompareNoCase(_T("course_uid")) == 0 || colName.CompareNoCase(_T("course uid")) == 0)
+			{
+				colIndex = i;
+				break;
+			}
 		}
 	}
+
+	// 如果未找到 course_uid 列，则尝试使用第二列作为回退（常见布局）
+	if (colIndex == -1)
+	{
+		if (nColumnCount > 1) colIndex = 1;
+		else colIndex = 0;
+	}
+
+	CString courseUid = m_list.GetItemText(nItem, colIndex);
+	if (courseUid.IsEmpty())
+	{
+		AfxMessageBox(_T("无法获取所选记录的 course_uid！"));
+		return;
+	}
+
+	// 打开 class_students 对话框并传入数据库指针与 course_uid
+	class_students dlg(this);
+	dlg.SetDatabaseHelper(&m_dbHelper);
+	dlg.SetCourseUid(courseUid);
+	dlg.DoModal();
+
+	// 不需要刷新 teach_class 列表，除非在子对话框做了修改
 }
