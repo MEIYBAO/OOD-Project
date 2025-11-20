@@ -32,13 +32,12 @@ public:
 
 	afx_msg void OnListRClick(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnMenuAdd();
-	afx_msg void OnMenuEdit();
 	afx_msg void OnMenuDelete();
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg); 
 
 private:
-	CString m_currentTable;
+	CString m_currentTable = _T("无");
 	CEdit editItem;
 	int hitRow;
 	int hitCol;

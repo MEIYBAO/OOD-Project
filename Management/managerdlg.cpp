@@ -5,6 +5,7 @@
 #include "Management.h"
 #include "afxdialogex.h"
 #include "managerdlg.h"
+#include "InputDlg.h"
 #include <afxdb.h> // 添加此行以包含CDatabase定义
 
 
@@ -118,11 +119,17 @@ void manager::OnBnClickedcounselor_show()
 
 void manager::OnListRClick(NMHDR* pNMHDR, LRESULT* pResult)
 {
+    // 判断List Control是否有数据
+    if (m_currentTable == _T("无"))
+    {
+        *pResult = 0;
+        return;
+    }
+
     CMenu menu;
     menu.CreatePopupMenu();
     menu.AppendMenu(MF_STRING, 1001, _T("新增"));
-    menu.AppendMenu(MF_STRING, 1002, _T("修改"));
-    menu.AppendMenu(MF_STRING, 1003, _T("删除"));
+    menu.AppendMenu(MF_STRING, 1002, _T("删除"));
 
     CPoint pt;
     GetCursorPos(&pt);
@@ -134,9 +141,6 @@ void manager::OnListRClick(NMHDR* pNMHDR, LRESULT* pResult)
         OnMenuAdd();
         break;
     case 1002:
-        OnMenuEdit();
-        break;
-    case 1003:
         OnMenuDelete();
         break;
     default:
@@ -144,18 +148,6 @@ void manager::OnListRClick(NMHDR* pNMHDR, LRESULT* pResult)
     }
 
     *pResult = 0;
-}
-
-void manager::OnMenuAdd()
-{
-    // TODO: 弹出新增对话框，插入数据库并刷新列表
-    AfxMessageBox(_T("新增操作"));
-}
-
-void manager::OnMenuEdit()
-{
-    // TODO: 获取选中项，弹出编辑对话框，更新数据库并刷新列表
-    AfxMessageBox(_T("修改操作"));
 }
 
 // 获取第colIndex列的列名
@@ -176,6 +168,71 @@ CString GetListCtrlColumnName(CListCtrl& listCtrl, int colIndex)
         }
     }
     return strColName;
+}
+
+void manager::OnMenuAdd()
+{
+    // TODO: 弹出新增对话框，插入数据库并刷新列表
+    CString hint;
+    int colCount = m_list.GetHeaderCtrl()->GetItemCount();
+    for (int i = 0; i < colCount; ++i)
+    {
+        CString colName = GetListCtrlColumnName(m_list, i);
+        hint += colName;
+        if (i != colCount - 1) hint += _T(" ");
+    }
+
+    InputDlg dlg(this);
+    dlg.SetHint(_T("请输入以下字段（用空格分隔）：") + hint);
+
+    if (dlg.DoModal() == IDOK)
+    {
+        CString input = dlg.m_strInput; // 用户输入的内容
+        if (input.IsEmpty())
+            return;
+
+        // 按空格分割
+        CStringArray arr;
+        int cur = 0;
+        while (true)
+        {
+            CString token = input.Tokenize(_T(" "), cur);
+            if (token.IsEmpty() && cur == -1) break;
+            if (!token.IsEmpty()) arr.Add(token);
+        }
+
+        int colCount = m_list.GetHeaderCtrl()->GetItemCount();
+        if (arr.GetSize() < colCount)
+        {
+            AfxMessageBox(_T("输入项不足！"));
+            return;
+        }
+
+        // 插入到List Control
+        int nItem = m_list.InsertItem(m_list.GetItemCount(), arr[0]);
+        for (int i = 1; i < colCount; ++i)
+        {
+            m_list.SetItemText(nItem, i, arr[i]);
+        }
+
+        // 插入数据库
+        CStringArray fields, values;
+        for (int i = 0; i < colCount; ++i)
+        {
+			CString cloumnname = GetListCtrlColumnName(m_list, i);
+            fields.Add(cloumnname);
+            values.Add(arr[i]);
+        }
+        if (m_dbHelper.InsertRecord(m_currentTable, fields, values))
+        {
+            AfxMessageBox(_T("新增成功！"));
+        }
+        else
+        {
+            AfxMessageBox(_T("数据库插入失败！"));
+            m_list.DeleteItem(nItem);
+        }
+    }
 }
 
 void manager::OnMenuDelete()
@@ -217,6 +274,7 @@ void manager::OnMenuDelete()
         AfxMessageBox(_T("删除失败！"));
     }
 }
+
 void manager::OnDblclkList(NMHDR* pNMHDR, LRESULT* pResult)
 {
     LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);

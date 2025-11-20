@@ -190,6 +190,7 @@
     <ClInclude Include="class_students.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Global.h" />
+    <ClInclude Include="InputDlg.h" />
     <ClInclude Include="Management.h" />
     <ClInclude Include="ManagementDlg.h" />
     <ClInclude Include="managerdlg.h" />
@@ -203,6 +204,7 @@
     <ClCompile Include="CDatabaseHelper.cpp" />
     <ClCompile Include="class_students.cpp" />
     <ClCompile Include="Global.cpp" />
+    <ClCompile Include="InputDlg.cpp" />
     <ClCompile Include="Management.cpp" />
     <ClCompile Include="ManagementDlg.cpp" />
     <ClCompile Include="managerdlg.cpp" />
