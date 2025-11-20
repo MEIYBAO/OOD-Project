@@ -213,6 +213,7 @@ void CManagementDlg::OnBnClickedlogin_button()
 				// TeacherDlg dlg;
 				// dlg.DoModal();
 				teacherdlg teacher; // 示例用Testdlg
+				teacher.SetTeacherUid(strusername);
 				teacher.DoModal();
 			}
 			else if (role == _T("counselor")) {

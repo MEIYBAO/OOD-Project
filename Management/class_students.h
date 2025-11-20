@@ -25,12 +25,21 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 	virtual BOOL OnInitDialog() override;
+	virtual BOOL PreTranslateMessage(MSG* pMsg) override;
 
 	CDatabaseHelper* m_pDb = nullptr;
 	CString m_courseUid;
 	CListCtrl m_studentsList;
 
+	// 双击编辑支持
+	CEdit    editItem;
+	int      hitRow = -1;
+	int      hitCol = -1;
+
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnLvnItemchangedlist(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnDblclkList(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnEditKillFocus();
+	void OnEditKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 };

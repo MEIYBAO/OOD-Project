@@ -39,16 +39,35 @@ BEGIN_MESSAGE_MAP(teacherdlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
+// 辅助：对简单 SQL 字符 ' 做转义，避免语句中断
+static CString EscapeSql(const CString& s)
+{
+	CString out = s;
+	out.Replace(_T("'"), _T("''"));
+	return out;
+}
+
 // teacherdlg 消息处理程序
 
 void teacherdlg::OnBnClickedshowclass()
 {
-	// TODO: 在此添加控件通知处理程序代码
-	if (!m_dbHelper.DisplayTableData(m_list, _T("teach_class")))
+	// 如果未设置教师 UID，则提示并返回（上层应调用 SetTeacherUid）
+	if (m_teacherUid.IsEmpty())
+	{
+		AfxMessageBox(_T("教师 UID 未设置，无法筛选教学班。"));
+		return;
+	}
+
+	// 构造安全的 WHERE 子句，按 teacher_uid 筛选
+	CString where;
+	CString uidEsc = EscapeSql(m_teacherUid);
+	where.Format(_T("teacher_uid = '%s'"), uidEsc);
+
+	// 传入 where 条件以只显示当前教师的教学班
+	if (!m_dbHelper.DisplayTableData(m_list, _T("teach_class"), _T("*"), where))
 	{
 		AfxMessageBox(_T("显示课程数据失败！"));
 	}
-
 }
 
 BOOL teacherdlg::OnInitDialog()
