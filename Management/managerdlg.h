@@ -35,6 +35,15 @@ public:
 	afx_msg void OnMenuEdit();
 	afx_msg void OnMenuDelete();
 
+	virtual BOOL PreTranslateMessage(MSG* pMsg); 
+
 private:
 	CString m_currentTable;
+	CEdit editItem;
+	int hitRow;
+	int hitCol;
+public:
+	afx_msg void OnDblclkList(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnEditKillFocus();
+	afx_msg void OnEditKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 };

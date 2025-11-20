@@ -36,6 +36,10 @@ BEGIN_MESSAGE_MAP(manager, CDialogEx)
     ON_BN_CLICKED(counselor_show, &manager::OnBnClickedcounselor_show)
 
     ON_NOTIFY(NM_RCLICK, LIST, &manager::OnListRClick)
+    ON_NOTIFY(NM_DBLCLK, LIST, &manager::OnDblclkList)
+
+    ON_EN_KILLFOCUS(101, &manager::OnEditKillFocus)
+    ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
 
@@ -213,3 +217,103 @@ void manager::OnMenuDelete()
         AfxMessageBox(_T("删除失败！"));
     }
 }
+void manager::OnDblclkList(NMHDR* pNMHDR, LRESULT* pResult)
+{
+    LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+    *pResult = 0;
+    LVHITTESTINFO info;
+    info.pt = pNMItemActivate->ptAction;
+
+    if (m_list.SubItemHitTest(&info) != -1)
+    {
+        hitRow = info.iItem;
+        hitCol = info.iSubItem;
+        if (editItem.m_hWnd == NULL) {
+            CRect dummyRect(0, 0, 0, 0);
+            editItem.Create(WS_CHILD | ES_LEFT | WS_BORDER | ES_AUTOHSCROLL, dummyRect, this, 101);
+            editItem.SetFont(this->GetFont(), FALSE);
+        }
+        // 获取单元格的精确矩形
+        CRect rect;
+        m_list.GetSubItemRect(info.iItem, info.iSubItem, LVIR_LABEL, rect);
+
+        // 将ListCtrl的坐标转换为对话框坐标
+        CPoint pt(rect.TopLeft());
+        m_list.ClientToScreen(&pt);
+        ScreenToClient(&pt);
+        rect.MoveToXY(pt);
+
+        // 设置编辑框内容和位置
+        editItem.SetWindowText(m_list.GetItemText(info.iItem, info.iSubItem));
+        editItem.MoveWindow(&rect, TRUE);
+        editItem.ShowWindow(SW_SHOW);
+        editItem.SetFocus();
+        editItem.SetSel(0, -1); // 全选文本，方便直接编辑
+    }
+}
+
+void manager::OnEditKillFocus()
+{
+    CString newText;
+    editItem.GetWindowText(newText);
+
+    // 获取原值
+    CString oldText = m_list.GetItemText(hitRow, hitCol);
+
+    if (newText != oldText)
+    {
+        // 获取主键信息
+        CString keyValue = m_list.GetItemText(hitRow, 0); // 假设主键在第0列
+        CString keyName = GetListCtrlColumnName(m_list, 0);
+        CString colName = GetListCtrlColumnName(m_list, hitCol);
+
+        CStringArray fields, values;
+        fields.Add(colName);
+        values.Add(newText);
+
+        CString where;
+        where.Format(_T("%s='%s'"), keyName, keyValue);
+
+        if (m_dbHelper.UpdateRecord(m_currentTable, where, fields, values))
+        {
+            m_list.SetItemText(hitRow, hitCol, newText);
+            AfxMessageBox(_T("修改成功！"));
+        }
+        else
+        {
+            AfxMessageBox(_T("修改失败！"));
+        }
+    }
+
+    editItem.ShowWindow(SW_HIDE);
+}
+
+void manager::OnEditKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+    if (nChar == VK_RETURN)
+    {
+        OnEditKillFocus();
+    }
+    else
+    {
+        CDialogEx::OnKeyDown(nChar, nRepCnt, nFlags);
+    }
+}
+
+BOOL manager::PreTranslateMessage(MSG* pMsg)
+{
+    // 判断消息是否为回车，并且焦点在editItem上
+    if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_RETURN)
+    {
+        if (editItem.m_hWnd != NULL && GetFocus() == &editItem)
+        {
+            // 让editItem处理回车
+            OnEditKeyDown(VK_RETURN, 1, 0);
+            return TRUE; // 阻止对话框默认处理
+        }
+        // 其它控件时，依然拦截回车，防止关闭对话框
+        return TRUE;
+    }
+    return CDialogEx::PreTranslateMessage(pMsg);
+}
+

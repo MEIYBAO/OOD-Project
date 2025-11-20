@@ -34,4 +34,7 @@ protected:
 public:
 	afx_msg void OnBnClickedlogin_button();
 	afx_msg void OnBnClickedexit_button();
+
+	BOOL CManagementDlg::PreTranslateMessage(MSG* pMsg);
+
 };

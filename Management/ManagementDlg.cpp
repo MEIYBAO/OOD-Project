@@ -251,3 +251,15 @@ void CManagementDlg::OnBnClickedexit_button()
 	EndDialog(IDOK);
 
 }
+
+BOOL CManagementDlg::PreTranslateMessage(MSG* pMsg)
+{
+	// 判断消息是否为回车，并且焦点在editItem上
+	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_RETURN)
+	{
+		CManagementDlg::OnBnClickedlogin_button();
+		// 其它控件时，依然拦截回车，防止关闭对话框
+		return TRUE;
+	}
+	return CDialogEx::PreTranslateMessage(pMsg);
+}
