@@ -31,4 +31,6 @@ public:
 
 	afx_msg void OnListRClick(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnShowClassStudents();
+	afx_msg void OnBnClickedButton1();
+	afx_msg void OnBnClickedChoosecourse();
 };

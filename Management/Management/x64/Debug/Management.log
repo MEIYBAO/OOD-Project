@@ -1,8 +1,2 @@
-﻿  Management.cpp
-  ManagementDlg.cpp
-  Testdlg.cpp
-  class_students.cpp
-  managerdlg.cpp
-  teacherdlg.cpp
-  正在生成代码...
+﻿  teacherdlg.cpp
   Management.vcxproj -> D:\OOP\OOD-Project\Management\x64\Debug\Management.exe

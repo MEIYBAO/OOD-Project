@@ -32,6 +32,7 @@ void teacherdlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(teacherdlg, CDialogEx)
 	ON_BN_CLICKED(showClass, &teacherdlg::OnBnClickedshowclass)
+	ON_BN_CLICKED(ChooseCourse, &teacherdlg::OnBnClickedChoosecourse)
 
 	ON_NOTIFY(LVN_ITEMCHANGED, workpanel, &teacherdlg::OnLvnItemchangedworkpanel)
 	ON_NOTIFY(NM_RCLICK, workpanel, &teacherdlg::OnListRClick)
@@ -54,7 +55,6 @@ BOOL teacherdlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
-	// TODO:  在此添加额外的初始化
 	// 初始化数据库连接
 	if (!m_dbHelper.Connect())
 	{
@@ -154,4 +154,14 @@ void teacherdlg::OnShowClassStudents()
 	dlg.DoModal();
 
 	// 不需要刷新 teach_class 列表，除非在子对话框做了修改
+}
+
+
+void teacherdlg::OnBnClickedChoosecourse()
+{
+	// 显示 course 表的数据到列表控件
+	if (!m_dbHelper.DisplayTableData(m_list, _T("course")))
+	{
+		AfxMessageBox(_T("显示课程数据失败！"));
+	}
 }
