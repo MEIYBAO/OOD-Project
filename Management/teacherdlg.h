@@ -1,7 +1,14 @@
 ﻿#pragma once
+
+#include "pch.h"
 #include "afxdialogex.h"
 #include "CDatabaseHelper.h"
-
+#include "Management.h"
+#include "class_students.h" 
+#include <afxdb.h>
+#include "Global.h" 
+#include "afxstr.h"
+#include <string>
 // teacherdlg 对话框
 
 class teacherdlg : public CDialogEx
@@ -16,6 +23,9 @@ public:
 	void SetTeacherUid(const CString& uid) { m_teacherUid = uid; }
 	CString GetTeacherUid() const { return m_teacherUid; }
 
+	// 获取当前列表显示的表/视图名称
+	CString GetCurrentTable() const { return m_currentTable; }
+
 // 对话框数据
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_teacher_DLG };
@@ -29,6 +39,9 @@ protected:
 	// 保存当前登录教师的 UID，用于筛选 teach_class 表
 	CString m_teacherUid;
 
+	// 记录当前 ListCtrl 中显示的是哪个表（"teach_class" / "course" / "" 等）
+	CString m_currentTable;
+
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedshowclass();
@@ -38,6 +51,6 @@ public:
 
 	afx_msg void OnListRClick(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnShowClassStudents();
-	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedChoosecourse();
+	afx_msg void OnBnClickedclasses();
 };

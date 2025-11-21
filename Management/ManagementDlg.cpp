@@ -203,7 +203,9 @@ void CManagementDlg::OnBnClickedlogin_button()
 
 			if (role == _T("student")) {
 				// 学生界面
-				StudentDlg dlg;
+				// StudentDlg dlg;
+				// dlg.DoModal();
+				Testdlg dlg; // 示例用Testdlg
 				dlg.DoModal();
 			}
 			else if (role == _T("teacher")) {
