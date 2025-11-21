@@ -136,103 +136,32 @@ void class_students::OnEditKillFocus()
 
 	CString oldText = m_studentsList.GetItemText(hitRow, hitCol);
 
-	if (newText == oldText) {
-		editItem.ShowWindow(SW_HIDE);
-		return;
-	}
+	if (newText != oldText)
+	{
+		// 假设主键在第0列（与 manager 实现一致）
+		CString keyValue = m_studentsList.GetItemText(hitRow, 0);
+		CString keyName = GetListCtrlColumnName(m_studentsList, 0);
+		CString colName = GetListCtrlColumnName(m_studentsList, hitCol);
 
-	// 辅助：转义单引号
-	auto EscapeSingleQuotes = [](const CString& s) -> CString {
-		CString t = s;
-		t.Replace(_T("'"), _T("''"));
-		return t;
-	};
+		CStringArray fields, values;
+		fields.Add(colName);
+		values.Add(newText);
 
-	// 查找列索引（大小写不敏感匹配列头）
-	auto FindColumnIndexByName = [this](const CString& target) -> int {
-		CHeaderCtrl* pHeader = m_studentsList.GetHeaderCtrl();
-		if (!pHeader) return -1;
-		int colCount = pHeader->GetItemCount();
-		for (int i = 0; i < colCount; ++i) {
-			CString name = GetListCtrlColumnName(m_studentsList, i);
-			if (!name.IsEmpty() && name.CompareNoCase(target) == 0) {
-				return i;
-			}
+		CString where;
+		where.Format(_T("%s='%s'"), keyName, keyValue);
+
+		// 固定表名 courseSelection（本对话框显示的表）
+		CString tableName = _T("courseSelection");
+
+		if (m_pDb != nullptr && m_pDb->UpdateRecord(tableName, where, fields, values))
+		{
+			m_studentsList.SetItemText(hitRow, hitCol, newText);
+			AfxMessageBox(_T("修改成功！"));
 		}
-		return -1;
-	};
-
-	int idxStudent = FindColumnIndexByName(_T("student_uid"));
-	int idxCourse  = FindColumnIndexByName(_T("course_uid"));
-	int idxFirst   = FindColumnIndexByName(_T("FirstRepair"));
-
-	// 必须拥有 student_uid 和 FirstRepair（course_uid 可以由 m_courseUid 提供）
-	if (idxStudent == -1 || idxFirst == -1) {
-		AfxMessageBox(_T("无法定位复合主键列(student_uid 或 FirstRepair)，拒绝修改。"));
-		editItem.ShowWindow(SW_HIDE);
-		return;
-	}
-
-	// 取主键值
-	CString studentUid = m_studentsList.GetItemText(hitRow, idxStudent);
-	CString firstRepair = m_studentsList.GetItemText(hitRow, idxFirst);
-	CString courseUid;
-
-	if (!m_courseUid.IsEmpty()) {
-		courseUid = m_courseUid; // 优先使用对话框传入的 course_uid
-	} else if (idxCourse != -1) {
-		courseUid = m_studentsList.GetItemText(hitRow, idxCourse);
-	}
-
-	// 校验主键值
-	if (studentUid.IsEmpty() || firstRepair.IsEmpty() || courseUid.IsEmpty()) {
-		AfxMessageBox(_T("主键值不完整，无法确定唯一记录，拒绝修改。"));
-		editItem.ShowWindow(SW_HIDE);
-		return;
-	}
-
-	// 获取要更新的列名（从表头）
-	CString colName = GetListCtrlColumnName(m_studentsList, hitCol);
-	if (colName.IsEmpty()) {
-		AfxMessageBox(_T("无法确定要更新的字段名（列头为空），拒绝修改。"));
-		editItem.ShowWindow(SW_HIDE);
-		return;
-	}
-
-	// 构造 WHERE 子句，确保唯一定位到一条记录
-	CString where;
-	where.Format(_T("student_uid='%s' AND course_uid='%s' AND FirstRepair='%s'"),
-		EscapeSingleQuotes(studentUid),
-		EscapeSingleQuotes(courseUid),
-		EscapeSingleQuotes(firstRepair));
-
-	// 额外防护：若 WHERE 为空则拒绝（理论上不会发生）
-	if (where.IsEmpty()) {
-		AfxMessageBox(_T("生成的 WHERE 为空，拒绝修改以防全表更新。"));
-		editItem.ShowWindow(SW_HIDE);
-		return;
-	}
-
-	// 构造字段和值
-	CStringArray fields, values;
-	fields.Add(colName);
-	values.Add(EscapeSingleQuotes(newText));
-
-	// 表名固定
-	CString tableName = _T("courseSelection");
-
-	// 执行更新
-	if (m_pDb != nullptr && m_pDb->UpdateRecord(tableName, where, fields, values))
-	{
-		m_studentsList.SetItemText(hitRow, hitCol, newText);
-		AfxMessageBox(_T("修改成功！"));
-	}
-	else
-	{
-		CString msg;
-		msg.Format(_T("修改失败！\n表: %s\n字段: %s\n值: %s\nWHERE: %s"),
-			tableName, colName, newText, where);
-		AfxMessageBox(msg);
+		else
+		{
+			AfxMessageBox(_T("修改失败！"));
+		}
 	}
 
 	editItem.ShowWindow(SW_HIDE);
