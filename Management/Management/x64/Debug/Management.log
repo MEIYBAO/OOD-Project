@@ -1,4 +1,11 @@
 ﻿  class_students.cpp
+  Global.cpp
+  InputDlg.cpp
+  Management.cpp
+  ManagementDlg.cpp
+  managerdlg.cpp
+  StudentDlg.cpp
   teacherdlg.cpp
+  Testdlg.cpp
   正在生成代码...
-  Management.vcxproj -> D:\OOP\OOD-Project\Management\x64\Debug\Management.exe
+  Management.vcxproj -> D:\Projects\OOD\OOD-Project\Management\x64\Debug\Management.exe
