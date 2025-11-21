@@ -9,6 +9,7 @@
 #include "afxdialogex.h"
 #include <mysql.h>
 #include "Global.h"
+#include "StudentDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -188,6 +189,8 @@ void CManagementDlg::OnBnClickedlogin_button()
 	sqlA.Format("SELECT role FROM user_account WHERE username='%s' AND password=MD5('%s')",
 		usernameA.GetString(), passwordA.GetString());
 
+	uid = usernameA.GetString();
+
 	if (mysql_query(conn, sqlA.GetString()) == 0) {
 		MYSQL_RES* res = mysql_store_result(conn);
 		if (res && mysql_num_rows(res) > 0) {
@@ -203,10 +206,8 @@ void CManagementDlg::OnBnClickedlogin_button()
 
 			if (role == _T("student")) {
 				// 学生界面
-				// StudentDlg dlg;
-				// dlg.DoModal();
-				Testdlg dlg; // 示例用Testdlg
-				dlg.DoModal();
+				 StudentDlg dlg;
+				 dlg.DoModal();
 			}
 			else if (role == _T("teacher")) {
 				// 教师界面

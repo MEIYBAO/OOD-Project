@@ -12,6 +12,7 @@
 #define IDD_teacher_DLG                 133
 #define IDD_class_student               134
 #define IDD_INPUT_DIALOG                137
+#define IDD_STUDENT_DIALOG              141
 #define login_button                    1000
 #define exit_button                     1001
 #define username_input                  1002
@@ -30,14 +31,16 @@
 #define IDC_EDIT_INPUT                  1015
 #define IDC_STATIC_HINT                 1016
 #define teach_classes                   1017
+#define person_show                     1018
+#define Student_List                    1019
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        141
+#define _APS_NEXT_RESOURCE_VALUE        143
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1018
+#define _APS_NEXT_CONTROL_VALUE         1020
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -2,7 +2,6 @@
 #include "afxdialogex.h"
 #include "CDatabaseHelper.h"
 
-
 // StudentDlg 对话框
 
 class StudentDlg : public CDialogEx
@@ -24,9 +23,13 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 
 	DECLARE_MESSAGE_MAP()
+
 public:
-	afx_msg void OnBnClickedperson_show();
+	afx_msg void OnClickedPersonShow();
 
 private:
-	CString m_currentTable;
+	CString m_currentTable = _T("无");
+
+public:
+	virtual BOOL OnInitDialog();
 };
