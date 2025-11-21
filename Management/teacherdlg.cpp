@@ -3,7 +3,6 @@
 #include "teacherdlg.h"
 
 
-
 // teacherdlg 对话框
 
 IMPLEMENT_DYNAMIC(teacherdlg, CDialogEx)
@@ -43,6 +42,258 @@ static CString EscapeSql(const CString& s)
 	return out;
 }
 
+// 控制：只有当通过“教学课程”按钮填充 course 视图时才允许在 course 视图显示“删除”菜单
+static bool s_allowDeleteInCourse = false; // 初始不允许
+
+// 辅助：获取第 colIndex 列的列名（若失败返回空）
+static CString GetListCtrlColumnName(CListCtrl& listCtrl, int colIndex)
+{
+	CString strColName;
+	CHeaderCtrl* pHeader = listCtrl.GetHeaderCtrl();
+	if (pHeader)
+	{
+		HDITEM hdi = { 0 };
+		TCHAR szText[256] = { 0 };
+		hdi.mask = HDI_TEXT;
+		hdi.pszText = szText;
+		hdi.cchTextMax = _countof(szText);
+		if (pHeader->GetItem(colIndex, &hdi))
+		{
+			strColName = szText;
+		}
+	}
+	return strColName;
+}
+
+// 辅助（通用）：在指定行上按惯例删除记录（寻找主键列、询问确认、执行删除并从界面移除）
+// 返回 true 表示删除成功并已从界面移除
+static bool DeleteRecordAt(CListCtrl& listCtrl, CDatabaseHelper& dbHelper, int nItem, const CString& tableName)
+{
+	if (nItem < 0 || !listCtrl.GetSafeHwnd() || !dbHelper.IsConnected())
+		return false;
+
+	// 尝试找到主键列，优先查找 "course_uid"
+	int nColumnCount = 0;
+	CHeaderCtrl* pHeader = listCtrl.GetHeaderCtrl();
+	if (pHeader) nColumnCount = pHeader->GetItemCount();
+
+	int pkCol = -1;
+	TCHAR szText[256] = { 0 };
+	for (int i = 0; i < nColumnCount; ++i)
+	{
+		HDITEM hdi = { 0 };
+		hdi.mask = HDI_TEXT;
+		hdi.pszText = szText;
+		hdi.cchTextMax = _countof(szText);
+		if (pHeader->GetItem(i, &hdi))
+		{
+			CString colName = szText;
+			if (colName.CompareNoCase(_T("course_uid")) == 0 || colName.CompareNoCase(_T("course uid")) == 0)
+			{
+				pkCol = i;
+				break;
+			}
+		}
+	}
+
+	// 回退到第0列
+	if (pkCol == -1) pkCol = 0;
+
+	CString keyValue = listCtrl.GetItemText(nItem, pkCol);
+	if (keyValue.IsEmpty())
+	{
+		AfxMessageBox(_T("无法获取要删除记录的主键值，操作取消。"));
+		return false;
+	}
+
+	CString keyName = GetListCtrlColumnName(listCtrl, pkCol);
+	if (keyName.IsEmpty())
+	{
+		AfxMessageBox(_T("无法获取主键列名，操作取消。"));
+		return false;
+	}
+
+	// 确认删除
+	if (AfxMessageBox(_T("确定要删除该记录吗？"), MB_YESNO | MB_ICONQUESTION) != IDYES)
+		return false;
+
+	// 构造 WHERE 并执行删除（使用 EscapeSql 保持安全）
+	CString where;
+	where.Format(_T("%s = '%s'"), keyName, EscapeSql(keyValue));
+
+	if (dbHelper.DeleteRecord(tableName, where))
+	{
+		listCtrl.DeleteItem(nItem);
+		AfxMessageBox(_T("删除成功！"));
+		return true;
+	}
+	else
+	{
+		AfxMessageBox(_T("删除失败，请检查数据库或日志。"));
+		return false;
+	}
+}
+
+// 新增辅助：删除 teacher_course 表中对应记录（使用传入的 teacherUid 与 semester 优先，若为空再从列表读取）
+// 返回 true 表示删除成功并从界面移除
+static bool DeleteTeacherCourseAt(CListCtrl& listCtrl, CDatabaseHelper& dbHelper, int nItem, const CString& teacherUidParam, const CString& semesterParam)
+{
+	if (nItem < 0 || !listCtrl.GetSafeHwnd() || !dbHelper.IsConnected())
+		return false;
+
+	// 查找 course_uid 列索引（teacher_uid / semester 可能不在 course 列视图）
+	int nColumnCount = 0;
+	CHeaderCtrl* pHeader = listCtrl.GetHeaderCtrl();
+	if (pHeader) nColumnCount = pHeader->GetItemCount();
+
+	int colTeacher = -1, colCourse = -1, colSemester = -1;
+	TCHAR szText[256] = { 0 };
+	for (int i = 0; i < nColumnCount; ++i)
+	{
+		HDITEM hdi = { 0 };
+		hdi.mask = HDI_TEXT;
+		hdi.pszText = szText;
+		hdi.cchTextMax = _countof(szText);
+		if (pHeader->GetItem(i, &hdi))
+		{
+			CString colName = szText;
+			if (colName.CompareNoCase(_T("teacher_uid")) == 0 || colName.CompareNoCase(_T("teacher uid")) == 0)
+			{
+				colTeacher = i;
+			}
+			else if (colName.CompareNoCase(_T("course_uid")) == 0 || colName.CompareNoCase(_T("course uid")) == 0)
+			{
+				colCourse = i;
+			}
+			else if (colName.CompareNoCase(_T("semester")) == 0)
+			{
+				colSemester = i;
+			}
+		}
+	}
+
+	// 回退策略：若未找到 course 列，则尝试使用第0或第1列
+	if (colCourse == -1 && nColumnCount > 0) colCourse = 0;
+	if (colCourse == -1) return false;
+
+	// 优先使用传入的 teacherUidParam / semesterParam（这些由调用方提供）
+	CString teacherUid = teacherUidParam;
+	if (teacherUid.IsEmpty() && colTeacher != -1)
+		teacherUid = listCtrl.GetItemText(nItem, colTeacher);
+
+	CString courseUid = listCtrl.GetItemText(nItem, colCourse);
+
+	CString semesterVal = semesterParam;
+	if (semesterVal.IsEmpty() && colSemester != -1)
+		semesterVal = listCtrl.GetItemText(nItem, colSemester);
+
+	if (teacherUid.IsEmpty() || courseUid.IsEmpty())
+	{
+		AfxMessageBox(_T("无法获取 teacher_uid 或 course_uid，操作取消。"));
+		return false;
+	}
+
+	// 构造 WHERE 子句：至少 teacher_uid + course_uid
+	CString where;
+	where.Format(_T("teacher_uid = '%s' AND course_uid = '%s'"), EscapeSql(teacherUid), EscapeSql(courseUid));
+
+	// 如果 semester 有值则加上筛选条件（避免误删跨学期记录）
+	if (!semesterVal.IsEmpty())
+	{
+		where += _T(" AND semester = '") + EscapeSql(semesterVal) + _T("'");
+	}
+
+	// 确认删除
+	if (AfxMessageBox(_T("确定要删除该授课记录（teacher_course）吗？"), MB_YESNO | MB_ICONQUESTION) != IDYES)
+		return false;
+
+	// 执行删除
+	if (dbHelper.DeleteRecord(_T("teacher_course"), where))
+	{
+		listCtrl.DeleteItem(nItem);
+		AfxMessageBox(_T("删除 teacher_course 记录成功！"));
+		return true;
+	}
+	else
+	{
+		AfxMessageBox(_T("删除失败，请检查数据库或日志。"));
+		return false;
+	}
+}
+
+// 新增辅助：在 teacher_course 插入一条记录（teacher_uid, course_uid, semester）
+// 返回 true 表示插入成功
+static bool InsertTeacherCourseAt(CListCtrl& listCtrl, CDatabaseHelper& dbHelper, int nItem, const CString& teacherUidParam, const CString& semesterParam)
+{
+	if (nItem < 0 || !listCtrl.GetSafeHwnd() || !dbHelper.IsConnected())
+		return false;
+
+	// 查找 course_uid 列索引
+	int nColumnCount = 0;
+	CHeaderCtrl* pHeader = listCtrl.GetHeaderCtrl();
+	if (pHeader) nColumnCount = pHeader->GetItemCount();
+
+	int colCourse = -1;
+	TCHAR szText[256] = { 0 };
+	for (int i = 0; i < nColumnCount; ++i)
+	{
+		HDITEM hdi = { 0 };
+		hdi.mask = HDI_TEXT;
+		hdi.pszText = szText;
+		hdi.cchTextMax = _countof(szText);
+		if (pHeader->GetItem(i, &hdi))
+		{
+			CString colName = szText;
+			if (colName.CompareNoCase(_T("course_uid")) == 0 || colName.CompareNoCase(_T("course uid")) == 0)
+			{
+				colCourse = i;
+				break;
+			}
+		}
+	}
+
+	// 回退策略：若未找到 course 列，则使用第0列
+	if (colCourse == -1 && nColumnCount > 0) colCourse = 0;
+	if (colCourse == -1) return false;
+
+	CString courseUid = listCtrl.GetItemText(nItem, colCourse);
+	CString teacherUid = teacherUidParam;
+	if (teacherUid.IsEmpty())
+	{
+		AfxMessageBox(_T("当前教师 UID 未设置，无法选择课程。"));
+		return false;
+	}
+
+	CString semesterVal = semesterParam;
+
+	// 确认选择
+	if (AfxMessageBox(_T("确定要选择该课程并加入授课表（teacher_course）吗？"), MB_YESNO | MB_ICONQUESTION) != IDYES)
+		return false;
+
+	// 构造插入字段与值
+	CStringArray fields, values;
+	fields.Add(_T("teacher_uid"));
+	fields.Add(_T("course_uid"));
+	fields.Add(_T("semester"));
+
+	values.Add(teacherUid);
+	values.Add(courseUid);
+	values.Add(semesterVal);
+
+	// 调用 InsertRecord（内部会做转义）
+	if (dbHelper.InsertRecord(_T("teacher_course"), fields, values))
+	{
+		AfxMessageBox(_T("选课成功，已加入 teacher_course 表。"));
+		return true;
+	}
+	else
+	{
+		AfxMessageBox(_T("选课失败，请检查数据库或日志。"));
+		return false;
+	}
+}
+
+
 // teacherdlg 消息处理程序
 
 void teacherdlg::OnBnClickedshowclass()
@@ -68,6 +319,7 @@ void teacherdlg::OnBnClickedshowclass()
 	{
 		// 标记当前 ListCtrl 正在显示 teach_class，从而允许右键菜单中的“显示学生列表”操作
 		m_currentTable = _T("teach_class");
+		// 点击“显示教学班”时不影响 s_allowDeleteInCourse（与课程视图无关）
 	}
 }
 
@@ -81,6 +333,9 @@ BOOL teacherdlg::OnInitDialog()
 		AfxMessageBox(_T("数据库连接失败！"));
 		return FALSE;
 	}
+
+	// 强制设置为报表视图，避免样式导致 NM_RCLICK/HitTest 行为异常
+	m_list.ModifyStyle(0, LVS_REPORT);
 
 	// 设置List Control样式
 	m_list.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
@@ -97,19 +352,82 @@ void teacherdlg::OnLvnItemchangedworkpanel(NMHDR* pNMHDR, LRESULT* pResult)
 
 void teacherdlg::OnListRClick(NMHDR* pNMHDR, LRESULT* pResult)
 {
+	// 仅在有意义的表类型上弹出对应的右键菜单
+	// 支持：teach_class -> "显示学生列表"
+	//       course      -> "删除" 或 "选择"
+	if (m_currentTable.IsEmpty())
+	{
+		*pResult = 0;
+		return;
+	}
+
+	// 获取鼠标位置，转换到 list 客户区并 HitTest 确认是在某一项上右击
+	CPoint ptScreen;
+	GetCursorPos(&ptScreen);
+
+	CPoint ptClient = ptScreen;
+	m_list.ScreenToClient(&ptClient);
+	int nItem = m_list.HitTest(ptClient);
+	if (nItem == -1)
+	{
+		// 在空白区域不弹菜单
+		*pResult = 0;
+		return;
+	}
+
 	CMenu menu;
 	menu.CreatePopupMenu();
-	menu.AppendMenu(MF_STRING, 1001, _T("显示学生列表"));
 
-	CPoint pt;
-	GetCursorPos(&pt);
-	int nCmd = menu.TrackPopupMenu(TPM_RETURNCMD | TPM_LEFTALIGN, pt.x, pt.y, this);
+	if (m_currentTable.CompareNoCase(_T("teach_class")) == 0)
+	{
+		menu.AppendMenu(MF_STRING, 1001, _T("显示学生列表"));
+	}
+	else if (m_currentTable.CompareNoCase(_T("course")) == 0)
+	{
+		// 在课程视图：由“教学课程”填充时显示“删除”，由“选择课程”填充时显示“选择”
+		if (s_allowDeleteInCourse)
+			menu.AppendMenu(MF_STRING, 2001, _T("删除"));
+		else
+			menu.AppendMenu(MF_STRING, 3001, _T("选择"));
+	}
+	else
+	{
+		// 其他表类型暂不显示菜单
+		*pResult = 0;
+		return;
+	}
+
+	int nCmd = menu.TrackPopupMenu(TPM_RETURNCMD | TPM_LEFTALIGN, ptScreen.x, ptScreen.y, this);
 
 	switch (nCmd)
 	{
 	case 1001:
 		OnShowClassStudents();
 		break;
+	case 2001:
+	{
+		// 使用专门的函数删除 teacher_course 表中的记录
+		CString semCs = CString(semester_now.c_str());
+		bool ok = DeleteTeacherCourseAt(m_list, m_dbHelper, nItem, m_teacherUid, semCs);
+		if (ok)
+		{
+			// 删除成功后通过“教学课程”按钮刷新视图
+			OnBnClickedclasses();
+		}
+	}
+	break;
+	case 3001:
+	{
+		// 在“选择课程”视图下，插入 teacher_course 记录
+		CString semCs = CString(semester_now.c_str());
+		bool ok = InsertTeacherCourseAt(m_list, m_dbHelper, nItem, m_teacherUid, semCs);
+		if (ok)
+		{
+			// 插入成功后刷新“选择课程”视图，移除已被选择的课程
+			OnBnClickedChoosecourse();
+		}
+	}
+	break;
 	default:
 		break;
 	}
@@ -207,6 +525,8 @@ void teacherdlg::OnBnClickedChoosecourse()
 	{
 		// 标记当前 ListCtrl 正在显示 course
 		m_currentTable = _T("course");
+		// 由“选择课程”填充时，不允许显示删除菜单
+		s_allowDeleteInCourse = false;
 	}
 }
 
@@ -242,5 +562,7 @@ void teacherdlg::OnBnClickedclasses()
 	{
 		// 标记当前 ListCtrl 正在显示 course
 		m_currentTable = _T("course");
+		// 由“教学课程”填充时，允许显示删除菜单
+		s_allowDeleteInCourse = true;
 	}
 }
