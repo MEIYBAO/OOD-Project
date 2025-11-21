@@ -23,7 +23,9 @@
 #define counselor_show                  1009
 #define workpanel                       1010
 #define showClass                       1011
+#define IDC_LIST1                       1012
 #define students_list                   1012
+#define IDC_BUTTON1                     1013
 #define ChooseCourse                    1013
 #define IDC_EDIT_INPUT                  1015
 #define IDC_STATIC_HINT                 1016
