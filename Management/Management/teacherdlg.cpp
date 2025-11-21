@@ -1,7 +1,12 @@
 ﻿// teacherdlg.cpp: 实现文件
-#include "pch.h"
-#include "teacherdlg.h"
+//
 
+#include "pch.h"
+#include "Management.h"
+#include "afxdialogex.h"
+#include "teacherdlg.h"
+#include "class_students.h" // 添加
+#include <afxdb.h>
 
 
 // teacherdlg 对话框
@@ -10,8 +15,8 @@ IMPLEMENT_DYNAMIC(teacherdlg, CDialogEx)
 
 teacherdlg::teacherdlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_teacher_DLG, pParent)
-	, m_currentTable(_T("")) // 初始化当前表为空
 {
+
 }
 
 teacherdlg::~teacherdlg()
@@ -28,7 +33,6 @@ void teacherdlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(teacherdlg, CDialogEx)
 	ON_BN_CLICKED(showClass, &teacherdlg::OnBnClickedshowclass)
 	ON_BN_CLICKED(ChooseCourse, &teacherdlg::OnBnClickedChoosecourse)
-	ON_BN_CLICKED(teach_classes, &teacherdlg::OnBnClickedclasses)
 
 	ON_NOTIFY(LVN_ITEMCHANGED, workpanel, &teacherdlg::OnLvnItemchangedworkpanel)
 	ON_NOTIFY(NM_RCLICK, workpanel, &teacherdlg::OnListRClick)
@@ -42,12 +46,7 @@ void teacherdlg::OnBnClickedshowclass()
 	// TODO: 在此添加控件通知处理程序代码
 	if (!m_dbHelper.DisplayTableData(m_list, _T("teach_class")))
 	{
-		AfxMessageBox(_T("显示教学班数据失败！"));
-	}
-	else
-	{
-		// 标记当前 ListCtrl 正在显示 teach_class，从而允许右键菜单中的“显示学生列表”操作
-		m_currentTable = _T("teach_class");
+		AfxMessageBox(_T("显示课程数据失败！"));
 	}
 
 }
@@ -100,13 +99,6 @@ void teacherdlg::OnListRClick(NMHDR* pNMHDR, LRESULT* pResult)
 
 void teacherdlg::OnShowClassStudents()
 {
-	// 限制：只有当当前列表是 teach_class（由 OnBnClickedshowclass 填充）才允许显示学生列表
-	if (m_currentTable.CompareNoCase(_T("teach_class")) != 0)
-	{
-		AfxMessageBox(_T("请先点击“显示教学班”以载入教学班列表，然后在该列表中选择一行，再使用“显示学生列表”。"));
-		return;
-	}
-
 	// 获取选中项
 	POSITION pos = m_list.GetFirstSelectedItemPosition();
 	if (pos == nullptr)
@@ -116,7 +108,7 @@ void teacherdlg::OnShowClassStudents()
 	}
 	int nItem = m_list.GetNextSelectedItem(pos);
 
-	// 查找列名为 course_uid 的列索引（teach_class 表通常包含 course_uid 列）
+	// 查找列名为 course_uid 的列索引
 	int nColumnCount = 0;
 	CHeaderCtrl* pHeader = m_list.GetHeaderCtrl();
 	if (pHeader)
@@ -141,7 +133,7 @@ void teacherdlg::OnShowClassStudents()
 		}
 	}
 
-	// 如果未找到 course_uid 列，则尝试使用常见列索引（例如索引1），但仍需提示以防错误
+	// 如果未找到 course_uid 列，则尝试使用第二列作为回退（常见布局）
 	if (colIndex == -1)
 	{
 		if (nColumnCount > 1) colIndex = 1;
@@ -167,61 +159,9 @@ void teacherdlg::OnShowClassStudents()
 
 void teacherdlg::OnBnClickedChoosecourse()
 {
-	// 只显示当前学期尚未被任何教师选择的课程
-	// 依赖全局变量 semester_now（Global.cpp 中定义）
-	// 生成形如：
-	// course_uid NOT IN (SELECT course_uid FROM teacher_course WHERE semester='2024-1')
-
-	// 从全局 std::string 转为 CString 并转义
-	CString semCs = CString(semester_now.c_str());
-	CString semEsc = EscapeSql(semCs);
-
-	CString where;
-	where.Format(_T("course_uid NOT IN (SELECT course_uid FROM teacher_course WHERE semester = '%s')"), semEsc);
-
-	// 如果你的数据库不支持子查询，也可以改为先查询 teacher_course 再用 NOT IN 列表构造 WHERE
-	if (!m_dbHelper.DisplayTableData(m_list, _T("course"), _T("*"), where))
+	// 显示 course 表的数据到列表控件
+	if (!m_dbHelper.DisplayTableData(m_list, _T("course")))
 	{
-		AfxMessageBox(_T("显示未被选择的课程失败！"));
-	}
-	else
-	{
-		// 标记当前 ListCtrl 正在显示 course
-		m_currentTable = _T("course");
-	}
-}
-
-
-void teacherdlg::OnBnClickedclasses()
-{
-	// 显示当前教师已选择的课程（按学期筛选）
-	if (m_teacherUid.IsEmpty())
-	{
-		AfxMessageBox(_T("教师 UID 未设置，无法显示已选课程。"));
-		return;
-	}
-
-	// 从全局 std::string 转为 CString 并转义（与 OnBnClickedChoosecourse 保持一致）
-	CString semCs = CString(semester_now.c_str());
-	CString semEsc = EscapeSql(semCs);
-
-	// 转义教师 UID
-	CString uidEsc = EscapeSql(m_teacherUid);
-
-	// 构造 WHERE：只显示当前学期该教师选择的课程
-	// 形式：course_uid IN (SELECT course_uid FROM teacher_course WHERE teacher_uid = 'xxx' AND semester = '2024-1')
-	CString where;
-	where.Format(_T("course_uid IN (SELECT course_uid FROM teacher_course WHERE teacher_uid = '%s' AND semester = '%s')"),
-		uidEsc, semEsc);
-
-	// 显示 course 表中符合条件的记录（即该教师在当前学期所选课程的详细信息）
-	if (!m_dbHelper.DisplayTableData(m_list, _T("course"), _T("*"), where))
-	{
-		AfxMessageBox(_T("显示该教师已选择的课程失败！"));
-	}
-	else
-	{
-		// 标记当前 ListCtrl 正在显示 course
-		m_currentTable = _T("course");
+		AfxMessageBox(_T("显示课程数据失败！"));
 	}
 }
