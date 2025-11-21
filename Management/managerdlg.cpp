@@ -172,6 +172,7 @@ CString GetListCtrlColumnName(CListCtrl& listCtrl, int colIndex)
 
 void manager::OnMenuAdd()
 {
+
     // TODO: 弹出新增对话框，插入数据库并刷新列表
     CString hint;
     int colCount = m_list.GetHeaderCtrl()->GetItemCount();

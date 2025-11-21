@@ -13,5 +13,6 @@
 #include "Testdlg.h"
 #include "managerdlg.h"
 #include "teacherdlg.h"
+#include "StudentDlg.h"
 
 #endif //PCH_H
