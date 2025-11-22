@@ -35,7 +35,7 @@ END_MESSAGE_MAP()
 
 
 // 辅助：对简单 SQL 字符 ' 做转义，避免语句中断
-static CString EscapeSql(const CString& s)
+CString EscapeSql(const CString& s)
 {
 	CString out = s;
 	out.Replace(_T("'"), _T("''"));

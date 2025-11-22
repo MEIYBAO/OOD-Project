@@ -2,6 +2,7 @@
 #include "afxdialogex.h"
 #include "CDatabaseHelper.h"
 
+
 // StudentDlg 对话框
 
 class StudentDlg : public CDialogEx
@@ -29,7 +30,22 @@ public:
 
 private:
 	CString m_currentTable = _T("无");
+	CEdit editItem;
+	int hitRow;
+	int hitCol;
+	bool m_allowUnselectInCourse;
 
 public:
 	virtual BOOL OnInitDialog();
+	afx_msg void OnDblclkList(NMHDR* pNMHDR, LRESULT* pResult);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnEditKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnEditKillFocus();
+	afx_msg void OnBnClickedChooseClass();
+	afx_msg void OnBnClickedcourses();
+	// 右键菜单处理
+	afx_msg void OnListRClick(NMHDR* pNMHDR, LRESULT* pResult);
+	static bool InsertCourseSelectionAt(CListCtrl& listCtrl, CDatabaseHelper& dbHelper, int nItem, const CString& studentUidParam, const CString& selectionDateParam);
+	static bool DeleteCourseSelectionAt(CListCtrl& listCtrl, CDatabaseHelper& dbHelper, int nItem, const CString& studentUidParam, const CString& selectionDateParam);
+
 };

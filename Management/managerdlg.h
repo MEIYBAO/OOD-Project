@@ -46,3 +46,6 @@ public:
 	afx_msg void OnEditKillFocus();
 	afx_msg void OnEditKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 };
+
+// 获取第colIndex列的列名
+CString GetListCtrlColumnName(CListCtrl& listCtrl, int colIndex);

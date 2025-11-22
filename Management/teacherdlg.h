@@ -54,3 +54,5 @@ public:
 	afx_msg void OnBnClickedChoosecourse();
 	afx_msg void OnBnClickedclasses();
 };
+
+CString EscapeSql(const CString& s);
