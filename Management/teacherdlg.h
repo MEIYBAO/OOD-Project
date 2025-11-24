@@ -9,6 +9,7 @@
 #include "Global.h" 
 #include "afxstr.h"
 #include <string>
+#include "ManagementDlg.h"
 // teacherdlg 对话框
 
 class teacherdlg : public CDialogEx
@@ -53,6 +54,8 @@ public:
 	afx_msg void OnShowClassStudents();
 	afx_msg void OnBnClickedChoosecourse();
 	afx_msg void OnBnClickedclasses();
+	afx_msg void OnBnClickedButton3();
+	afx_msg void OnBnClickedchangeuser();
 };
 
 CString EscapeSql(const CString& s);

@@ -31,6 +31,7 @@ BEGIN_MESSAGE_MAP(teacherdlg, CDialogEx)
 
 	ON_NOTIFY(LVN_ITEMCHANGED, workpanel, &teacherdlg::OnLvnItemchangedworkpanel)
 	ON_NOTIFY(NM_RCLICK, workpanel, &teacherdlg::OnListRClick)
+	ON_BN_CLICKED(changeUser, &teacherdlg::OnBnClickedchangeuser)
 END_MESSAGE_MAP()
 
 
@@ -565,4 +566,13 @@ void teacherdlg::OnBnClickedclasses()
 		// 由“教学课程”填充时，允许显示删除菜单
 		s_allowDeleteInCourse = true;
 	}
+}
+
+
+void teacherdlg::OnBnClickedchangeuser()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CManagementDlg dlg;
+	EndDialog(IDOK);
+	dlg.DoModal();
 }
