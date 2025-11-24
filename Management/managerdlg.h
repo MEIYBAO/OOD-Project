@@ -39,12 +39,18 @@ public:
 private:
 	CString m_currentTable = _T("无");
 	CEdit editItem;
+	CEdit m_semesterEdit;
+
+	void SaveSemesterEdit();
+
 	int hitRow;
 	int hitCol;
 public:
 	afx_msg void OnDblclkList(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnEditKillFocus();
 	afx_msg void OnEditKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg void manager::OnEnChangeSemesterEdit();
+	afx_msg void OnBnClickedchangeid();
 };
 
 // 获取第colIndex列的列名

@@ -7,6 +7,7 @@
 #include "managerdlg.h"
 #include "InputDlg.h"
 #include <afxdb.h> // 添加此行以包含CDatabase定义
+#include "ManagementDlg.h"
 
 
 // manager 对话框
@@ -27,6 +28,7 @@ void manager::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, LIST, m_list);
+    DDX_Control(pDX, IDC_semester, m_semesterEdit);
 }
 
 
@@ -40,7 +42,11 @@ BEGIN_MESSAGE_MAP(manager, CDialogEx)
     ON_NOTIFY(NM_DBLCLK, LIST, &manager::OnDblclkList)
 
     ON_EN_KILLFOCUS(101, &manager::OnEditKillFocus)
+
+    ON_EN_CHANGE(IDC_semester, &manager::OnEnChangeSemesterEdit)
+
     ON_WM_KEYDOWN()
+    ON_BN_CLICKED(IDC_change_id, &manager::OnBnClickedchangeid)
 END_MESSAGE_MAP()
 
 
@@ -87,6 +93,13 @@ BOOL manager::OnInitDialog()
 
     // 设置List Control样式
     m_list.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+
+    // 初始化学期编辑框显示当前学期
+    CString semCs(semester_now.c_str());
+    if (m_semesterEdit.GetSafeHwnd()) {
+        m_semesterEdit.SetWindowText(semCs);
+    }
+
     return TRUE;  // return TRUE unless you set the focus to a control
     // 异常: OCX 属性页应返回 FALSE
 }
@@ -369,9 +382,106 @@ BOOL manager::PreTranslateMessage(MSG* pMsg)
             OnEditKeyDown(VK_RETURN, 1, 0);
             return TRUE; // 阻止对话框默认处理
         }
+
+        // 学期编辑框：按回车显式保存
+        if (m_semesterEdit.m_hWnd != NULL && GetFocus() == &m_semesterEdit)
+        {
+            SaveSemesterEdit();
+            return TRUE; // 拦截
+        }
+
         // 其它控件时，依然拦截回车，防止关闭对话框
         return TRUE;
     }
     return CDialogEx::PreTranslateMessage(pMsg);
 }
 
+void manager::OnEnChangeSemesterEdit()
+{
+    if (!m_semesterEdit.GetSafeHwnd()) return;
+
+    CString sem;
+    m_semesterEdit.GetWindowText(sem);
+    sem.Trim(); // 去掉首尾空格，规范化输入
+
+    int year = 0, term = 0;
+    if (_stscanf_s(sem, _T("%d-%d"), &year, &term) == 2)
+    {
+        if ((term == 1 || term == 2) && year >= 2000 && year <= 2100)
+        {
+            // 规范化为 "YYYY-T" 格式，避免因为空格或前导零等差异导致判断失败
+            CString norm;
+            norm.Format(_T("%04d-%d"), year, term);
+
+            CStringA semA(norm);
+            std::string newSem = semA.GetString();
+
+            // 仅在确实变化时写回全局变量
+            if (newSem != semester_now)
+            {
+                semester_now = newSem;
+                // 实时更新时不弹出大量窗口 —— 仅静默更新
+                // 如果你希望实时也提示，请打开下面一行：
+                // AfxMessageBox(CString(_T("学期已更新为: ")) + norm);
+            }
+        }
+        // 非法格式不更新全局变量
+    }
+}
+
+void manager::SaveSemesterEdit()
+{
+    if (!m_semesterEdit.GetSafeHwnd())
+        return;
+
+    CString sem;
+    m_semesterEdit.GetWindowText(sem);
+    sem.Trim(); // 去掉首尾空格
+
+    int year = 0, term = 0;
+    if (_stscanf_s(sem, _T("%d-%d"), &year, &term) == 2
+        && (term == 1 || term == 2)
+        && year >= 2000 && year <= 2100)
+    {
+        // 规范化字符串再写回，保证一致性
+        CString norm;
+        norm.Format(_T("%04d-%d"), year, term);
+        CStringA semA(norm);
+        std::string newSem = semA.GetString();
+
+        if (newSem != semester_now)
+        {
+            std::string oldSem = semester_now;
+            semester_now = newSem;
+
+            CString msg;
+            msg.Format(_T("学期已从 %S 更新为 %s"), oldSem.c_str(), norm);
+            AfxMessageBox(msg);
+        }
+        else
+        {
+            // 值相同，静默返回（可改为提示）
+            // AfxMessageBox(_T("学期未发生变化"));
+        }
+
+        // 把编辑框显示为规范化后的字符串（消除用户输入差异）
+        m_semesterEdit.SetWindowText(norm);
+    }
+    else
+    {
+        // 格式错误：提示并回滚显示为当前全局学期，恢复焦点和全选
+        AfxMessageBox(_T("学期格式错误，应为 YYYY-1 或 YYYY-2（例如 2024-2）"));
+        CString semCs(semester_now.c_str());
+        m_semesterEdit.SetWindowText(semCs);
+        m_semesterEdit.SetFocus();
+        m_semesterEdit.SetSel(0, -1);
+    }
+}
+void manager::OnBnClickedchangeid()
+{
+    // TODO: 在此添加控件通知处理程序代码
+    CManagementDlg dlg;
+    EndDialog(IDOK);
+	dlg.DoModal();
+
+}
