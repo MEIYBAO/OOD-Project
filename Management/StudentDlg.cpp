@@ -396,12 +396,22 @@ bool StudentDlg::InsertCourseSelectionAt(CListCtrl& listCtrl, CDatabaseHelper& d
     fields.Add(_T("student_uid"));
     fields.Add(_T("course_uid"));
     fields.Add(_T("selection_date"));
+    fields.Add(_T("FirstRepair"));
 
     values.Add(studentUid);
     values.Add(courseUid);
     values.Add(selDate);
+	values.Add(_T("1")); // FristRepair 初始为 1
+
+    int index_last = values.GetSize() - 1;
 
     // 调用 InsertRecord（内部会做转义）
+    if (dbHelper.InsertRecord(_T("courseselection"), fields, values))
+    {
+        AfxMessageBox(_T("选课成功，已加入 courseselection 表。"));
+        return true;
+    }
+    values[index_last] = "0";
     if (dbHelper.InsertRecord(_T("courseselection"), fields, values))
     {
         AfxMessageBox(_T("选课成功，已加入 courseselection 表。"));
