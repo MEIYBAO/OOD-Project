@@ -29,6 +29,7 @@
 #define IDC_BUTTON1                     1013
 #define ChooseCourse                    1013
 #define choose_class                    1013
+#define IDC_change_id                   1013
 #define IDC_EDIT_INPUT                  1015
 #define IDC_STATIC_HINT                 1016
 #define teach_classes                   1017
@@ -36,6 +37,7 @@
 #define Student_List                    1019
 #define IDC_BUTTON2                     1020
 #define courses                         1020
+#define IDC_semester                    1021
 
 // Next default values for new objects
 // 
@@ -43,7 +45,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        143
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1021
+#define _APS_NEXT_CONTROL_VALUE         1022
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
