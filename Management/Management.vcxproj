@@ -200,6 +200,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="teacherdlg.h" />
     <ClInclude Include="Testdlg.h" />
+    <ClInclude Include="tool.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CDatabaseHelper.cpp" />
@@ -218,6 +219,7 @@
     <ClCompile Include="StudentDlg.cpp" />
     <ClCompile Include="teacherdlg.cpp" />
     <ClCompile Include="Testdlg.cpp" />
+    <ClCompile Include="tool.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Management.rc" />

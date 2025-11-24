@@ -10,6 +10,7 @@
 #include "ManagementDlg.h"
 
 
+
 // manager 对话框
 
 IMPLEMENT_DYNAMIC(manager, CDialogEx)
@@ -51,7 +52,30 @@ END_MESSAGE_MAP()
 
 
 // manager 消息处理程序
+BOOL manager::OnInitDialog()
+{
+    CDialogEx::OnInitDialog();
 
+    // TODO:  在此添加额外的初始化
+    // 初始化数据库连接
+    if (!m_dbHelper.Connect())
+    {
+        AfxMessageBox(_T("数据库连接失败！"));
+        return FALSE;
+    }
+
+    // 设置List Control样式
+    m_list.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+
+    // 初始化学期编辑框显示当前学期
+    CString semCs(semester_now.c_str());
+    if (m_semesterEdit.GetSafeHwnd()) {
+        m_semesterEdit.SetWindowText(semCs);
+    }
+
+    return TRUE;  // return TRUE unless you set the focus to a control
+    // 异常: OCX 属性页应返回 FALSE
+}
 
 void manager::OnBnClickedstudent_show()
 {
@@ -77,31 +101,6 @@ void manager::OnBnClickedteacher_show()
     {
         m_currentTable = _T("teacher");
     }
-}
-
-BOOL manager::OnInitDialog()
-{
-    CDialogEx::OnInitDialog();
-
-    // TODO:  在此添加额外的初始化
-    // 初始化数据库连接
-    if (!m_dbHelper.Connect())
-    {
-        AfxMessageBox(_T("数据库连接失败！"));
-        return FALSE;
-    }
-
-    // 设置List Control样式
-    m_list.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
-
-    // 初始化学期编辑框显示当前学期
-    CString semCs(semester_now.c_str());
-    if (m_semesterEdit.GetSafeHwnd()) {
-        m_semesterEdit.SetWindowText(semCs);
-    }
-
-    return TRUE;  // return TRUE unless you set the focus to a control
-    // 异常: OCX 属性页应返回 FALSE
 }
 
 void manager::OnBnClickedcourse_show()
@@ -161,26 +160,6 @@ void manager::OnListRClick(NMHDR* pNMHDR, LRESULT* pResult)
     }
 
     *pResult = 0;
-}
-
-// 获取第colIndex列的列名
-CString GetListCtrlColumnName(CListCtrl& listCtrl, int colIndex)
-{
-    CString strColName;
-    CHeaderCtrl* pHeader = listCtrl.GetHeaderCtrl();
-    if (pHeader)
-    {
-        HDITEM hdi = { 0 };
-        TCHAR szText[256] = { 0 };
-        hdi.mask = HDI_TEXT;
-        hdi.pszText = szText;
-        hdi.cchTextMax = 255;
-        if (pHeader->GetItem(colIndex, &hdi))
-        {
-            strColName = szText;
-        }
-    }
-    return strColName;
 }
 
 void manager::OnMenuAdd()
@@ -420,9 +399,7 @@ void manager::OnEnChangeSemesterEdit()
             if (newSem != semester_now)
             {
                 semester_now = newSem;
-                // 实时更新时不弹出大量窗口 —— 仅静默更新
-                // 如果你希望实时也提示，请打开下面一行：
-                // AfxMessageBox(CString(_T("学期已更新为: ")) + norm);
+                AfxMessageBox(CString(_T("学期已更新为: ")) + norm);
             }
         }
         // 非法格式不更新全局变量
