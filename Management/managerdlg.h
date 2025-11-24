@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "afxdialogex.h"
 #include "CDatabaseHelper.h"
+#include "tool.h"
 
 // manager 对话框
 
@@ -52,6 +53,3 @@ public:
 	afx_msg void manager::OnEnChangeSemesterEdit();
 	afx_msg void OnBnClickedchangeid();
 };
-
-// 获取第colIndex列的列名
-CString GetListCtrlColumnName(CListCtrl& listCtrl, int colIndex);
