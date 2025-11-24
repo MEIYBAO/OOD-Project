@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "afxdialogex.h"
 #include "CDatabaseHelper.h"
+#include "ManagementDlg.h"
 
 
 // StudentDlg 对话框
@@ -48,4 +49,6 @@ public:
 	static bool InsertCourseSelectionAt(CListCtrl& listCtrl, CDatabaseHelper& dbHelper, int nItem, const CString& studentUidParam, const CString& selectionDateParam);
 	static bool DeleteCourseSelectionAt(CListCtrl& listCtrl, CDatabaseHelper& dbHelper, int nItem, const CString& studentUidParam, const CString& selectionDateParam);
 
+	afx_msg void OnBnClickedStuChange();
+	afx_msg void OnBnClickedSearchGrade();
 };

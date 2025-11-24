@@ -34,6 +34,8 @@ BEGIN_MESSAGE_MAP(StudentDlg, CDialogEx)
     ON_BN_CLICKED(choose_class, &StudentDlg::OnBnClickedChooseClass)
     ON_BN_CLICKED(courses, &StudentDlg::OnBnClickedcourses)
     ON_NOTIFY(NM_RCLICK, Student_List, &StudentDlg::OnListRClick)
+    ON_BN_CLICKED(IDC_STU_CHANGE, &StudentDlg::OnBnClickedStuChange)
+    ON_BN_CLICKED(IDC_SEARCH_GRADE, &StudentDlg::OnBnClickedSearchGrade)
 END_MESSAGE_MAP()
 
 
@@ -75,6 +77,13 @@ BOOL StudentDlg::OnInitDialog()
 
 void StudentDlg::OnDblclkList(NMHDR* pNMHDR, LRESULT* pResult)
 {
+    // 仅当当前视图为 student（即通过 person_show 按钮加载）时允许左键双击编辑
+    if (m_currentTable.CompareNoCase(_T("student")) != 0)
+    {
+        *pResult = 0;
+        return;
+    }
+
     LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
     *pResult = 0;
     LVHITTESTINFO info;
@@ -494,5 +503,58 @@ bool StudentDlg::DeleteCourseSelectionAt(CListCtrl& listCtrl, CDatabaseHelper& d
     {
         AfxMessageBox(_T("退选失败，请检查数据库或日志。"));
         return false;
+    }
+}
+
+void StudentDlg::OnBnClickedStuChange()
+{
+    // TODO: 在此添加控件通知处理程序代码
+    CManagementDlg dlg;
+    EndDialog(IDOK);
+    dlg.DoModal();
+}
+
+void StudentDlg::OnBnClickedSearchGrade()
+{
+    // TODO: 在此添加控件通知处理程序代码
+    m_allowUnselectInCourse = true;
+
+    // 从全局 std::string 转为 CString 并转义
+    CString semCs = CString(semester_now.c_str());
+    CString semEsc = EscapeSql(semCs);
+
+    int year = 0;
+    int term = 0;
+
+    // 解析 "2024-1" 这种格式
+    _stscanf_s(semEsc, _T("%d-%d"), &year, &term);
+
+    CString semDateStart;
+    if (term == 1)
+    {
+        // 1 学期 -> 3 月 1 日
+        semDateStart.Format(_T("%d-3-1"), year);
+    }
+    else if (term == 2)
+    {
+        // 2 学期 -> 9 月 1 日
+        semDateStart.Format(_T("%d-9-1"), year);
+    }
+
+	CString strTables = _T("course JOIN courseselection ON course.course_uid=courseselection.course_uid");
+	CString  strColumns = _T("course.course_uid,course_name,grade,credits,category,FirstRepair");
+
+    CString strWhere;
+    strWhere.Format(_T("student_uid = '%s' AND selection_date < '%s'"), uid, semDateStart);
+
+    // 如果你的数据库不支持子查询，也可以改为先查询 teacher_course 再用 NOT IN 列表构造 WHERE
+    if (!m_dbHelper.DisplayTableData(m_list, strTables,strColumns, strWhere))
+    {
+        AfxMessageBox(_T("显示课程成绩失败！"));
+    }
+    else
+    {
+        // 标记当前 ListCtrl 正在显示 course
+        m_currentTable = _T("course,courseselection");
     }
 }
