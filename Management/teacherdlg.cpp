@@ -205,14 +205,14 @@ static bool DeleteTeacherCourseAt(CListCtrl& listCtrl, CDatabaseHelper& dbHelper
 	}
 
 	// 确认删除
-	if (AfxMessageBox(_T("确定要删除该授课记录（teacher_course）吗？"), MB_YESNO | MB_ICONQUESTION) != IDYES)
+	if (AfxMessageBox(_T("确定要删除该讲授课吗？"), MB_YESNO | MB_ICONQUESTION) != IDYES)
 		return false;
 
 	// 执行删除
 	if (dbHelper.DeleteRecord(_T("teacher_course"), where))
 	{
 		listCtrl.DeleteItem(nItem);
-		AfxMessageBox(_T("删除 teacher_course 记录成功！"));
+		AfxMessageBox(_T("删除课程成功！"));
 		return true;
 	}
 	else
@@ -268,7 +268,7 @@ static bool InsertTeacherCourseAt(CListCtrl& listCtrl, CDatabaseHelper& dbHelper
 	CString semesterVal = semesterParam;
 
 	// 确认选择
-	if (AfxMessageBox(_T("确定要选择该课程并加入授课表（teacher_course）吗？"), MB_YESNO | MB_ICONQUESTION) != IDYES)
+	if (AfxMessageBox(_T("确定要选择该课程进行讲授吗？"), MB_YESNO | MB_ICONQUESTION) != IDYES)
 		return false;
 
 	// 构造插入字段与值
@@ -284,7 +284,7 @@ static bool InsertTeacherCourseAt(CListCtrl& listCtrl, CDatabaseHelper& dbHelper
 	// 调用 InsertRecord（内部会做转义）
 	if (dbHelper.InsertRecord(_T("teacher_course"), fields, values))
 	{
-		AfxMessageBox(_T("选课成功，已加入 teacher_course 表。"));
+		AfxMessageBox(_T("选课成功！"));
 		return true;
 	}
 	else
@@ -454,13 +454,14 @@ void teacherdlg::OnShowClassStudents()
 	}
 	int nItem = m_list.GetNextSelectedItem(pos);
 
-	// 查找列名为 course_uid 的列索引（teach_class 表通常包含 course_uid 列）
+	// 查找列名为 course_uid 与 semester 的列索引（teach_class 表通常包含这些列）
 	int nColumnCount = 0;
 	CHeaderCtrl* pHeader = m_list.GetHeaderCtrl();
 	if (pHeader)
 		nColumnCount = pHeader->GetItemCount();
 
-	int colIndex = -1;
+	int colCourse = -1;
+	int colSemester = -1;
 	TCHAR szText[256] = { 0 };
 	for (int i = 0; i < nColumnCount; ++i)
 	{
@@ -473,30 +474,41 @@ void teacherdlg::OnShowClassStudents()
 			CString colName = szText;
 			if (colName.CompareNoCase(_T("course_uid")) == 0 || colName.CompareNoCase(_T("course uid")) == 0)
 			{
-				colIndex = i;
-				break;
+				colCourse = i;
+			}
+			else if (colName.CompareNoCase(_T("semester")) == 0)
+			{
+				colSemester = i;
 			}
 		}
 	}
 
-	// 如果未找到 course_uid 列，则尝试使用常见列索引（例如索引1），但仍需提示以防错误
-	if (colIndex == -1)
+	// 回退策略：若未找到 course_uid 列，则尝试使用常见列索引（例如索引1）
+	if (colCourse == -1)
 	{
-		if (nColumnCount > 1) colIndex = 1;
-		else colIndex = 0;
+		if (nColumnCount > 1) colCourse = 1;
+		else colCourse = 0;
 	}
 
-	CString courseUid = m_list.GetItemText(nItem, colIndex);
+	CString courseUid = m_list.GetItemText(nItem, colCourse);
 	if (courseUid.IsEmpty())
 	{
 		AfxMessageBox(_T("无法获取所选记录的 course_uid！"));
 		return;
 	}
 
-	// 打开 class_students 对话框并传入数据库指针与 course_uid
+	// 读取 teach_class 行的 semester 值（若未找到列则为空，child 对话框会回退到全局）
+	CString semesterVal;
+	if (colSemester != -1)
+		semesterVal = m_list.GetItemText(nItem, colSemester);
+	else
+		semesterVal = _T(""); // 子对话框会回退到全局 semester_now
+
+	// 打开 class_students 对话框并传入数据库指针、course_uid 与 semester（优先使用 teach_class 的 semester）
 	class_students dlg(this);
 	dlg.SetDatabaseHelper(&m_dbHelper);
 	dlg.SetCourseUid(courseUid);
+	dlg.SetSemester(semesterVal);
 	dlg.DoModal();
 
 	// 不需要刷新 teach_class 列表，除非在子对话框做了修改
@@ -576,3 +588,4 @@ void teacherdlg::OnBnClickedchangeuser()
 	EndDialog(IDOK);
 	dlg.DoModal();
 }
+

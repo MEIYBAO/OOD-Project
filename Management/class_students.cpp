@@ -68,33 +68,45 @@ BOOL class_students::OnInitDialog()
 	// 如果有数据库和 course_uid，则显示对应选课记录
 	if (m_pDb != nullptr && !m_courseUid.IsEmpty())
 	{
-		CString semCs = CString(semester_now.c_str());
-		CString semEsc = EscapeSql(semCs);
-		int year = 0;
-		int term = 0;
+		// 优先使用传入的 m_semester（来自 teach_class 行），若为空则使用全局 semester_now
+		CString semToUse;
+		if (!m_semester.IsEmpty())
+			semToUse = m_semester;
+		else
+			semToUse = CString(semester_now.c_str());
 
-		// 解析 "2024-1" 这种格式
-		_stscanf_s(semEsc, _T("%d-%d"), &year, &term);
-
-		CString semDateStart;
-		CString semDateEnd;
-		if (term == 1)
-		{
-			// 1 学期 -> 3 月 1 日
-			semDateStart.Format(_T("%d-3-1"), year);
-			semDateEnd.Format(_T("%d-9-1"), year);
-		}
-		else if (term == 2)
-		{
-			// 2 学期 -> 9 月 1 日
-			semDateStart.Format(_T("%d-9-1"), year);
-			++year;
-			semDateEnd.Format(_T("%d-3-1"), year);
-		}
+		// 若未提供有效学期则只按 course_uid 过滤
+		int year = 0, term = 0;
+		CString semEsc = EscapeSql(semToUse);
+		BOOL parsed = (_stscanf_s(semEsc, _T("%d-%d"), &year, &term) == 2);
 
 		CString where;
-		// 安全地按字符串匹配 course_uid
-		where.Format(_T("course_uid = '%s' AND selection_date >= '%s' AND selection_date < '%s'"), m_courseUid,semDateStart,semDateEnd);
+		if (parsed && (term == 1 || term == 2))
+		{
+			CString semDateStart;
+			CString semDateEnd;
+			if (term == 1)
+			{
+				semDateStart.Format(_T("%d-3-1"), year);
+				semDateEnd.Format(_T("%d-9-1"), year);
+			}
+			else // term == 2
+			{
+				semDateStart.Format(_T("%d-9-1"), year);
+				++year;
+				semDateEnd.Format(_T("%d-3-1"), year);
+			}
+
+			// 使用 course_uid + 学期时间区间过滤（按用户要求：使用 teach_class 的 semester）
+			where.Format(_T("course_uid = '%s' AND selection_date >= '%s' AND selection_date < '%s'"),
+				EscapeSql(m_courseUid), semDateStart, semDateEnd);
+		}
+		else
+		{
+			// 回退：只按 course_uid
+			where.Format(_T("course_uid = '%s'"), EscapeSql(m_courseUid));
+		}
+
 		// 使用表名与字段名称与数据库一致（大小写对 MySQL 不敏感）
 		if (!m_pDb->DisplayTableData(m_studentsList, _T("courseSelection"), _T("*"), where))
 		{

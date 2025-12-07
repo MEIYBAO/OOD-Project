@@ -17,6 +17,9 @@ public:
 	void SetDatabaseHelper(CDatabaseHelper* pDb) { m_pDb = pDb; }
 	void SetCourseUid(const CString& uid) { m_courseUid = uid; }
 
+	// 新增：按指定学期过滤（若为空则使用全局 semester_now）
+	void SetSemester(const CString& sem) { m_semester = sem; }
+
 // 对话框数据
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_class_student };
@@ -29,6 +32,7 @@ protected:
 
 	CDatabaseHelper* m_pDb = nullptr;
 	CString m_courseUid;
+	CString m_semester;
 	CListCtrl m_studentsList;
 
 	// 双击编辑支持

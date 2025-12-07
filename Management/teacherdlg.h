@@ -56,6 +56,7 @@ public:
 	afx_msg void OnBnClickedclasses();
 	afx_msg void OnBnClickedButton3();
 	afx_msg void OnBnClickedchangeuser();
+	afx_msg void OnBnClickedButton2();
 };
 
 CString EscapeSql(const CString& s);
