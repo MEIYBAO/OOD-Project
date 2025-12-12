@@ -264,3 +264,41 @@ BEGIN
     DELETE FROM user_account WHERE username = OLD.counselor_uid;
 END$$
 DELIMITER ;
+
+-- 新增：teacher_course 插入后自动创建 teach_class（且必须为当前学期）
+DROP TRIGGER IF EXISTS after_insert_teacher_course_create_class;
+
+DELIMITER $$
+
+CREATE TRIGGER after_insert_teacher_course_create_class
+AFTER INSERT ON teacher_course
+FOR EACH ROW
+BEGIN
+    DECLARE cur_semester VARCHAR(16);
+    DECLARE next_no INT;
+    DECLARE new_class_id CHAR(10);
+
+    SET cur_semester = NEW.semester;
+
+    -- 生成新的 class_id：CLASS0001 / CLASS0002 ...
+    SELECT IFNULL(MAX(CAST(SUBSTRING(class_id, 6) AS UNSIGNED)), 0) + 1
+      INTO next_no
+      FROM teach_class
+     WHERE class_id LIKE 'CLASS%';
+
+    SET new_class_id = CONCAT('CLASS', LPAD(next_no, 4, '0'));
+
+    -- 插入教学班；若同一老师+课程+学期已存在教学班，则不重复插入
+    IF NOT EXISTS (
+        SELECT 1
+          FROM teach_class
+         WHERE teacher_uid = NEW.teacher_uid
+           AND course_uid  = NEW.course_uid
+           AND semester    = NEW.semester
+    ) THEN
+        INSERT INTO teach_class (class_id, course_uid, teacher_uid, semester, schedule, location)
+        VALUES (new_class_id, NEW.course_uid, NEW.teacher_uid, NEW.semester, '待排课', '待定');
+    END IF;
+END$$
+
+DELIMITER ;
