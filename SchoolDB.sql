@@ -302,3 +302,21 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+-- 删除 teacher_course 记录时，联动删除对应 teach_class
+DROP TRIGGER IF EXISTS after_delete_teacher_course_delete_class;
+
+DELIMITER $$
+
+CREATE TRIGGER after_delete_teacher_course_delete_class
+AFTER DELETE ON teacher_course
+FOR EACH ROW
+BEGIN
+    DELETE FROM teach_class
+     WHERE teacher_uid = OLD.teacher_uid
+       AND course_uid  = OLD.course_uid
+       AND semester    = OLD.semester;
+END$$
+
+DELIMITER ;
+

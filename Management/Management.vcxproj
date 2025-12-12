@@ -225,7 +225,6 @@
     <ResourceCompile Include="Management.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="CONTRIBUTING.md" />
     <None Include="res\Management.rc2" />
   </ItemGroup>
   <ItemGroup>

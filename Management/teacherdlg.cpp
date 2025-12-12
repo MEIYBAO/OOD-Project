@@ -68,72 +68,72 @@ static CString GetListCtrlColumnName(CListCtrl& listCtrl, int colIndex)
 
 // 辅助（通用）：在指定行上按惯例删除记录（寻找主键列、询问确认、执行删除并从界面移除）
 // 返回 true 表示删除成功并已从界面移除
-static bool DeleteRecordAt(CListCtrl& listCtrl, CDatabaseHelper& dbHelper, int nItem, const CString& tableName)
-{
-	if (nItem < 0 || !listCtrl.GetSafeHwnd() || !dbHelper.IsConnected())
-		return false;
-
-	// 尝试找到主键列，优先查找 "course_uid"
-	int nColumnCount = 0;
-	CHeaderCtrl* pHeader = listCtrl.GetHeaderCtrl();
-	if (pHeader) nColumnCount = pHeader->GetItemCount();
-
-	int pkCol = -1;
-	TCHAR szText[256] = { 0 };
-	for (int i = 0; i < nColumnCount; ++i)
-	{
-		HDITEM hdi = { 0 };
-		hdi.mask = HDI_TEXT;
-		hdi.pszText = szText;
-		hdi.cchTextMax = _countof(szText);
-		if (pHeader->GetItem(i, &hdi))
-		{
-			CString colName = szText;
-			if (colName.CompareNoCase(_T("course_uid")) == 0 || colName.CompareNoCase(_T("course uid")) == 0)
-			{
-				pkCol = i;
-				break;
-			}
-		}
-	}
-
-	// 回退到第0列
-	if (pkCol == -1) pkCol = 0;
-
-	CString keyValue = listCtrl.GetItemText(nItem, pkCol);
-	if (keyValue.IsEmpty())
-	{
-		AfxMessageBox(_T("无法获取要删除记录的主键值，操作取消。"));
-		return false;
-	}
-
-	CString keyName = GetListCtrlColumnName(listCtrl, pkCol);
-	if (keyName.IsEmpty())
-	{
-		AfxMessageBox(_T("无法获取主键列名，操作取消。"));
-		return false;
-	}
-
-	// 确认删除
-	if (AfxMessageBox(_T("确定要删除该记录吗？"), MB_YESNO | MB_ICONQUESTION) != IDYES)
-		return false;
-
-	// 构造 WHERE 并执行删除（使用 EscapeSql 保持安全）
-	CString where;
-	where.Format(_T("%s = '%s'"), keyName, EscapeSql(keyValue));
-
-	if (dbHelper.DeleteRecord(tableName, where))
-	{
-		listCtrl.DeleteItem(nItem);
-		AfxMessageBox(_T("删除成功！"));
-		return true;
-	}
-	else
-	{
-		AfxMessageBox(_T("删除失败，请检查数据库或日志。"));
-		return false;
-	}
-}
+//static bool DeleteRecordAt(CListCtrl& listCtrl, CDatabaseHelper& dbHelper, int nItem, const CString& tableName)
+//{
+//	if (nItem < 0 || !listCtrl.GetSafeHwnd() || !dbHelper.IsConnected())
+//		return false;
+//
+//	// 尝试找到主键列，优先查找 "course_uid"
+//	int nColumnCount = 0;
+//	CHeaderCtrl* pHeader = listCtrl.GetHeaderCtrl();
+//	if (pHeader) nColumnCount = pHeader->GetItemCount();
+//
+//	int pkCol = -1;
+//	TCHAR szText[256] = { 0 };
+//	for (int i = 0; i < nColumnCount; ++i)
+//	{
+//		HDITEM hdi = { 0 };
+//		hdi.mask = HDI_TEXT;
+//		hdi.pszText = szText;
+//		hdi.cchTextMax = _countof(szText);
+//		if (pHeader->GetItem(i, &hdi))
+//		{
+//			CString colName = szText;
+//			if (colName.CompareNoCase(_T("course_uid")) == 0 || colName.CompareNoCase(_T("course uid")) == 0)
+//			{
+//				pkCol = i;
+//				break;
+//			}
+//		}
+//	}
+//
+//	// 回退到第0列
+//	if (pkCol == -1) pkCol = 0;
+//
+//	CString keyValue = listCtrl.GetItemText(nItem, pkCol);
+//	if (keyValue.IsEmpty())
+//	{
+//		AfxMessageBox(_T("无法获取要删除记录的主键值，操作取消。"));
+//		return false;
+//	}
+//
+//	CString keyName = GetListCtrlColumnName(listCtrl, pkCol);
+//	if (keyName.IsEmpty())
+//	{
+//		AfxMessageBox(_T("无法获取主键列名，操作取消。"));
+//		return false;
+//	}
+//
+//	// 确认删除
+//	if (AfxMessageBox(_T("确定要删除该记录吗？"), MB_YESNO | MB_ICONQUESTION) != IDYES)
+//		return false;
+//
+//	// 构造 WHERE 并执行删除（使用 EscapeSql 保持安全）
+//	CString where;
+//	where.Format(_T("%s = '%s'"), keyName, EscapeSql(keyValue));
+//
+//	if (dbHelper.DeleteRecord(tableName, where))
+//	{
+//		listCtrl.DeleteItem(nItem);
+//		AfxMessageBox(_T("删除成功！"));
+//		return true;
+//	}
+//	else
+//	{
+//		AfxMessageBox(_T("删除失败，请检查数据库或日志。"));
+//		return false;
+//	}
+//}
 
 // 新增辅助：删除 teacher_course 表中对应记录（使用传入的 teacherUid 与 semester 优先，若为空再从列表读取）
 // 返回 true 表示删除成功并从界面移除
