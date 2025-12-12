@@ -1,4 +1,7 @@
-﻿  Global.cpp
+﻿  StudentDlg.cpp
+D:\file\OOD-Project\Management\StudentDlg.cpp(415,20): warning C4244: “初始化”: 从“INT_PTR”转换到“int”，可能丢失数据
+  (编译源文件“/StudentDlg.cpp”)
+  
   Management.vcxproj -> D:\file\OOD-Project\Management\x64\Debug\Management.exe
   'pwsh.exe' 不是内部或外部命令，也不是可运行的程序
   或批处理文件。

@@ -108,6 +108,7 @@
     <None Include="res\Management.rc2">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="CONTRIBUTING.md" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Management.ico">

@@ -312,7 +312,7 @@ void teacherdlg::OnBnClickedshowclass()
 	where.Format(_T("teacher_uid = '%s'"), uidEsc);
 
 	// 传入 where 条件以只显示当前教师的教学班
-	if (!m_dbHelper.DisplayTableData(m_list, _T("teach_class"), _T("*"), where))
+	if (!m_dbHelper.DisplayTableData(m_list, _T("teach_class"), _T("class_id,course_uid,teacher_uid,semester"), where))
 	{
 		AfxMessageBox(_T("显示教学班数据失败！"));
 	}
