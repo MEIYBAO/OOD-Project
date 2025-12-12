@@ -183,6 +183,9 @@ INSERT INTO user_account (username, password, role) VALUES
 -- 创建触发器来处理删除操作，避免外键约束错误
 -- ==========================
 
+-- 确保后续触发器语句始终在 SchoolDB 上执行（即便单独运行本段）
+USE SchoolDB;
+
 -- 删除已存在的触发器（如果存在）
 DROP TRIGGER IF EXISTS before_delete_student;
 DROP TRIGGER IF EXISTS before_delete_teacher;
