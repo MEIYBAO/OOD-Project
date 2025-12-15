@@ -326,12 +326,11 @@ CREATE TRIGGER trg_student_after_insert
 AFTER INSERT ON student
 FOR EACH ROW
 BEGIN
-  INSERT INTO user_account (user_uid, role, username, password_hash)
+  INSERT INTO user_account (username, password, role)
   VALUES (
     NEW.student_uid,
-    'student',
-    NEW.student_uid,
-    SHA2('123456', 256)
+    MD5('123456'),
+	'student'
   );
 END$$
 
@@ -343,12 +342,11 @@ CREATE TRIGGER trg_teacher_after_insert
 AFTER INSERT ON teacher
 FOR EACH ROW
 BEGIN
-  INSERT INTO user_account (user_uid, role, username, password_hash)
+  INSERT INTO user_account (username, password, role)
   VALUES (
-    NEW.teacher_uid,
-    'teacher',
-    NEW.teacher_uid,
-    SHA2('123456', 256)
+	NEW.teacher_uid,
+    MD5('123456'),
+	'student'
   );
 END$$
 
@@ -360,12 +358,11 @@ CREATE TRIGGER trg_counselor_after_insert
 AFTER INSERT ON counselor
 FOR EACH ROW
 BEGIN
-  INSERT INTO user_account (user_uid, role, username, password_hash)
+  INSERT INTO user_account (username, password, role)
   VALUES (
-    NEW.counselor_uid,
-    'counselor',
-    NEW.counselor_uid,
-    SHA2('123456', 256)
+	NEW.counselor_uid,
+    MD5('123456'),
+	'student'
   );
 END$$
 
