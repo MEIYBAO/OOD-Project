@@ -1,191 +1,163 @@
-# SchoolDB 数据库说明文档
+# SchoolDB 教务管理系统数据库说明
 
-## 概述
-本文件描述仓库 `backend/SchoolDB.sql` 中定义的测试数据库 `SchoolDB` 的模式（schema）、字段说明、表之间的关系，以及导入与验证步骤和常见问题提示。该数据库用于教学/演示场景，包含学生、教师、辅导员、课程、选课与授课安排等基本实体。
+## 一、数据库概述
 
-## 重要说明
-- 脚本使用 `INSERT IGNORE`，因此可重复运行以安全填充示例数据（不会因为主键冲突而失败）。
-- 所有表使用 InnoDB 引擎并以 `utf8mb4` 字符集存储。
-- UID 字段长度必须与应用端一致（脚本使用 student: CHAR(12)、teacher/counselor/class/course: CHAR(10) 等）。
+SchoolDB 是一个面向高校教务管理场景设计的关系型数据库，基于 MySQL 实现，主要用于支撑学生信息管理、课程管理、教师授课安排、学生选课与成绩记录以及系统用户账号管理等核心业务。数据库整体设计遵循关系数据库规范化原则，结构清晰、层次分明，能够满足课程设计与中小型教务系统原型开发的需求。
 
-## 表结构（摘要）
+数据库默认字符集为 `utf8mb4`，支持完整的中文与多语言字符存储，存储引擎统一采用 InnoDB，以保证事务一致性和外键约束的可靠性。
 
-下面为每张表的字段逐项注释，包含字段含义、示例与约束建议。
+---
 
-1) student
-- student_uid CHAR(12) PRIMARY KEY
-	- 含义：学生唯一标识（建议格式：入学年 + 序号，如 '202400000001'）。
-	- 约束：非空、固定长度 12。
-	- 示例：'202400000001'
-- name VARCHAR(128)
-	- 含义：学生姓名。
-	- 示例：'陈晓明'
-- major VARCHAR(128)
-	- 含义：所学专业。
-	- 示例：'计算机科学与技术'
-- telephone VARCHAR(32)
-	- 含义：手机号或座机。
-	- 示例：'13810000001'
-- wechat_id VARCHAR(64)
-	- 含义：微信号或第三方标识。
-	- 示例：'chenxm'
-- email VARCHAR(255)
-	- 含义：邮箱地址（用于通知/找回密码）。
-	- 示例：'chenxm@example.com'
+## 二、数据表结构说明
 
-2) teacher
-- teacher_uid CHAR(10) PRIMARY KEY
-	- 含义：教师唯一标识（例如：'10000001'）。
-	- 约束：非空、长度 10。
-- name VARCHAR(128)
-	- 教师姓名。
-- telephone VARCHAR(32)
-	- 联系电话。
-- wechat_id VARCHAR(64)
-	- 微信号。
-- email VARCHAR(255)
-	- 邮箱地址。
+### 1. student（学生表）
 
-3) course
-- course_uid CHAR(10) PRIMARY KEY
-	- 含义：课程编号（例如：'COURSE0001'）。
-	- 约束：非空、长度 10。
-- course_name VARCHAR(128)
-	- 课程名称。
-- credits INT
-	- 学分数。
-- category VARCHAR(64)
-	- 课程类别（如 '必修' / '选修'）。
+学生表用于存储在校学生的基本信息，是选课与成绩管理的核心实体。
 
-4) counselor
-- counselor_uid CHAR(10) PRIMARY KEY
-	- 含义：辅导员编号（例如：'C000000001'）。
-- name VARCHAR(128)
-	- 姓名。
-- telephone VARCHAR(32)
-	- 联系电话。
-- wechat_id VARCHAR(64)
-	- 微信号。
-- email VARCHAR(255)
-	- 邮箱。
+- student_uid：学生唯一标识，主键  
+- name：学生姓名  
+- major：专业名称  
+- telephone：联系电话  
+- wechat_id：微信号  
+- email：电子邮箱  
 
-5) 
-6) courseSelection
-- student_uid CHAR(12)
-	- 外键，引用 `student(student_uid)`。
-- course_uid CHAR(10)
-	- 外键，引用 `course(course_uid)`。
-- selection_date DATETIME DEFAULT CURRENT_TIMESTAMP
-	- 含义：选课时间。
-	- 示例：'2025-09-01 09:00:00'
-- grade DECIMAL(5,2)
-	- 含义：成绩，保留两位小数。
-	- 示例：88.50
-- FirstRepair BOOLEAN DEFAULT 0
-	- 含义：是否初修（1 表示初修，0 表示重修）。
-- PRIMARY KEY (student_uid, course_uid, FirstRepair)
-	- 说明：允许在区分初修/重修状态下记录多条同课记录；若不需要此语义，可改为仅 student_uid+course_uid 为主键。
+该表通过外键与选课表关联，并与用户账号表形成一一对应关系。
 
-7) teacher_course
-- teacher_uid CHAR(10)
-	- 外键，引用 `teacher(teacher_uid)`。
-- course_uid CHAR(10)
-	- 外键，引用 `course(course_uid)`。
-- semester VARCHAR(16)
-	- 含义：学期标识，例如 '2025-1'。
-- PRIMARY KEY (teacher_uid, course_uid, semester)
-	- 说明：每学期每门课程对应一名教师记录。
+---
 
-8) teach_class
-- class_id CHAR(10) PRIMARY KEY
-	- 含义：教学班/课程班编号（例如 'CLS000001'）。
-- course_uid CHAR(10)
-	- 外键，引用 `course(course_uid)`。
-- teacher_uid CHAR(10)
-	- 外键，引用 `teacher(teacher_uid)`。
-- semester VARCHAR(16)
-	- 学期。
-- schedule VARCHAR(64)
-	- 上课安排（文本），例如 '周一 09:00-11:00'。
-- location VARCHAR(64)
-	- 上课地点，例如 '教学楼A-101'。
+### 2. teacher（教师表）
 
-9) user_account
-- username VARCHAR(64) PRIMARY KEY
-	- 含义：账户名，通常等于 student_uid/teacher_uid/counselor_uid 或管理员自定义用户名。
-	- 示例：'202400000001'、'admin01'
-- password CHAR(32)
-	- 含义：密码哈希（示例脚本使用 MD5）；生产环境请改用更安全的哈希算法并加盐。
-- role ENUM('student','teacher','counselor','manager')
-	- 含义：账户角色，决定权限范围。
-- created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-	- 含义：账户创建时间。
+教师表用于存储任课教师的基本信息。
 
+- teacher_uid：教师唯一标识，主键  
+- name：教师姓名  
+- telephone：联系电话  
+- wechat_id：微信号  
+- email：电子邮箱  
 
-## ER 关系（简要）
-- student 1—* student_counselor *—1 counselor
-- student 1—* courseSelection *—1 course
-- teacher 1—* teacher_course *—1 course
-- teacher 1—* teach_class *—1 course
-- user_account 与 student/teacher/counselor 通过 username 映射（非强制外键）
+教师可通过授课关系表与课程表建立多对多关系。
 
-## 导入指引（本地 MySQL）
-1. 使用 MySQL 客户端导入（会在脚本里创建数据库并填充）：
+---
 
-```bash
-mysql -u root -p < backend/SchoolDB.sql
-```
+### 3. counselor（辅导员表）
 
-2. 若要逐步执行便于排错，可打开 mysql shell：
+辅导员表用于存储辅导员的基本信息，主要服务于学生管理与系统账号体系。
 
-```sql
-SOURCE /path/to/backend/SchoolDB.sql;
-```
+- counselor_uid：辅导员编号，主键  
+- name：姓名  
+- telephone：联系电话  
+- wechat_id：微信号  
+- email：电子邮箱  
 
-3. 如需在重复运行脚本时避免外键问题，可临时禁用外键检查（谨慎使用）：
+---
 
-```sql
-SET FOREIGN_KEY_CHECKS=0;
--- RUN SCRIPT
-SET FOREIGN_KEY_CHECKS=1;
-```
+### 4. course（课程表）
 
-## 基本验证查询（运行导入后）
-- 确认每表记录数：
-```sql
-SELECT COUNT(*) FROM student;
-SELECT COUNT(*) FROM teacher;
-SELECT COUNT(*) FROM counselor;
-SELECT COUNT(*) FROM course;
-SELECT COUNT(*) FROM student_counselor;
-SELECT COUNT(*) FROM courseSelection;
-SELECT COUNT(*) FROM teacher_course;
-SELECT COUNT(*) FROM teach_class;
-SELECT COUNT(*) FROM user_account;
-```
+课程表用于描述学校开设的课程基础信息。
 
-- 示例联表查询：
-```sql
--- 查询学生及其辅导员
-SELECT s.student_uid, s.name AS student_name, c.name AS counselor_name
-FROM student s
-LEFT JOIN student_counselor sc ON s.student_uid = sc.student_uid
-LEFT JOIN counselor c ON sc.counselor_uid = c.counselor_uid
-LIMIT 20;
+- course_uid：课程编号，主键  
+- course_name：课程名称  
+- credits：学分  
+- category：课程类别（必修 / 选修）  
 
--- 学生成绩示例
-SELECT s.name, cs.course_uid, cs.grade
-FROM courseSelection cs
-JOIN student s ON cs.student_uid = s.student_uid
-ORDER BY cs.grade DESC
-LIMIT 20;
-```
+该表与教师授课表、学生选课表均存在外键关联。
 
-## 注意事项与改进建议
-- 密码存储：示例使用 MD5，仅用于测试；生产环境请使用 bcrypt/argon2 并加盐。
-- UID 长度：确保前端/后端生成 UID 时与脚本一致（student 12 位，teacher/counselor 10 位）。
-- 约束策略：若希望脚本每次重建数据库更干净，可在脚本顶部加上 `DROP DATABASE IF EXISTS SchoolDB;`。
-- 若要生成大量随机数据，可使用脚本（我可以提供 Python/Node 实现）。
+---
 
-## 联系与支持
-如需我进一步生成更大量的数据、绘制 ER 图（可输出为 PNG/SVG），或把此 schema 转为 ORM 模型（例如 Sequelize/TypeORM），告诉我目标工具与需求，我会继续实现。
+### 5. user_account（用户账号表）
+
+用户账号表用于统一管理系统登录账户及角色权限。
+
+- username：用户名（学号 / 工号），主键  
+- password：加密后的密码  
+- role：用户角色（student、teacher、counselor、manager）  
+- created_at：账号创建时间  
+
+该表通过触发器与学生、教师、辅导员表自动保持一致。
+
+---
+
+### 6. teacher_course（教师授课关系表）
+
+教师授课关系表用于描述教师在某一学期教授某门课程的情况。
+
+- teacher_uid：教师编号  
+- course_uid：课程编号  
+- semester：学期  
+- 联合主键：(teacher_uid, course_uid, semester)
+
+该表是教师与课程之间的多对多关系表。
+
+---
+
+### 7. teach_class（教学班表）
+
+教学班表用于表示某门课程在特定学期由某位教师开设的具体教学班。
+
+- class_id：教学班编号，主键  
+- course_uid：课程编号  
+- teacher_uid：教师编号  
+- semester：学期  
+- schedule：上课时间  
+- location：上课地点  
+
+教学班可由授课关系表自动生成，减少人工维护成本。
+
+---
+
+### 8. courseSelection（学生选课表）
+
+学生选课表用于记录学生选课情况、成绩以及是否重修。
+
+- student_uid：学生编号  
+- course_uid：课程编号  
+- selection_date：选课时间  
+- grade：成绩（允许为空）  
+- FirstRepair：是否为重修标记  
+- 联合主键：(student_uid, course_uid, FirstRepair)
+
+该设计支持学生对同一课程的多次修读记录。
+
+---
+
+## 三、表之间的关系说明
+
+- 学生与课程之间通过选课表形成多对多关系  
+- 教师与课程之间通过授课关系表形成多对多关系  
+- 授课关系与教学班之间形成一对多逻辑关联  
+- 学生、教师、辅导员均与用户账号表形成一一对应关系  
+
+整体结构清晰，逻辑关系明确，便于后续功能扩展。
+
+---
+
+## 四、触发器与自动化设计
+
+数据库中设计了多种触发器以实现数据自动维护和一致性控制：
+
+- 新增学生、教师或辅导员时，自动创建对应的用户账号  
+- 删除学生时，自动清理其选课记录及账号信息  
+- 删除教师时，自动清理其授课关系、教学班及账号信息  
+- 插入教师授课关系时，自动创建对应教学班  
+- 删除授课关系时，自动删除关联的教学班  
+
+通过触发器机制，有效降低了业务层逻辑复杂度，提升了数据库自身的完整性与安全性。
+
+---
+
+## 五、示例数据说明
+
+数据库脚本中为各主要数据表预置了真实风格的示例数据，并统一采用 `INSERT IGNORE` 方式插入，确保脚本可重复执行而不会产生主键冲突，便于教学演示与功能测试。
+
+---
+
+## 六、适用场景
+
+- 数据库课程设计与实验报告  
+- 面向对象或软件工程课程项目  
+- 教务管理系统原型开发  
+- MySQL 外键与触发器综合练习  
+
+---
+
+如需进一步扩展，可在现有结构基础上增加学院、班级、考试安排、成绩统计等功能模块。

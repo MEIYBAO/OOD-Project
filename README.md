@@ -1,33 +1,13 @@
-
-<img width="1184" height="477" alt="image" src="https://github.com/user-attachments/assets/ea90354a-8830-4eb2-8f72-b7ee22ac304f" />
-
 # OOD-Project
 面向对象程序设计课程设计
 
-变量命名要简洁易懂
-
-# 前后端需要新导出的数据库：
-选完课插入选课数据（已有）
-
-老师选择教学课程（已有）
-
-导出分配教学班（已有）
-
-教学结束产生成绩（在选课记录表中有成绩）
-
-# 任务列表
-后期加上学业监测系统
-
-# System文件说明
-
-`fronted`前端文件
-
-`backed`后端文件
+# 数据库：
+数据库相关信息，请看`SchoolDB_SCHEMA.md`
 
 # 功能模块
-![alt text](picture/登录.png)
+![alt text](picture/大体功能图.png)
 
-# 类属性设计（一起完善）
+# 类属性设计
 ![alt text](picture/学生.png)
 ![alt text](picture/老师.png)
 ![alt text](picture/课程.png)
