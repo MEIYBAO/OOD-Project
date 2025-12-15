@@ -320,3 +320,55 @@ END$$
 
 DELIMITER ;
 
+DELIMITER $$
+
+CREATE TRIGGER trg_student_after_insert
+AFTER INSERT ON student
+FOR EACH ROW
+BEGIN
+  INSERT INTO user_account (user_uid, role, username, password_hash)
+  VALUES (
+    NEW.student_uid,
+    'student',
+    NEW.student_uid,
+    SHA2('123456', 256)
+  );
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_teacher_after_insert
+AFTER INSERT ON teacher
+FOR EACH ROW
+BEGIN
+  INSERT INTO user_account (user_uid, role, username, password_hash)
+  VALUES (
+    NEW.teacher_uid,
+    'teacher',
+    NEW.teacher_uid,
+    SHA2('123456', 256)
+  );
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_counselor_after_insert
+AFTER INSERT ON counselor
+FOR EACH ROW
+BEGIN
+  INSERT INTO user_account (user_uid, role, username, password_hash)
+  VALUES (
+    NEW.counselor_uid,
+    'counselor',
+    NEW.counselor_uid,
+    SHA2('123456', 256)
+  );
+END$$
+
+DELIMITER ;
+
+
