@@ -1,6 +1,18 @@
 # OOD-Project
 面向对象程序设计课程设计
 
+
+
+## 前置操作
+
+__1.启动系统前要运行`SchoolDB.sql`文件（确保使用mysql）__
+
+__2.数据库连接密码在global.cpp文件中修改`mysql_password`的值即可__
+
+
+
+
+
 # 数据库：
 数据库相关信息，请看`SchoolDB_SCHEMA.md`
 
